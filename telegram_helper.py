@@ -11,7 +11,7 @@ def send(text: str):
     payload = {
         "chat_id": CHAT_ID,
         "text": text,
-        "parse_mode": "Markdown",
+        "parse_mode": "HTML",
     }
     resp = requests.post(TELEGRAM_URL, json=payload, timeout=15)
     resp.raise_for_status()
