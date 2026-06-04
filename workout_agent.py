@@ -62,36 +62,7 @@ def main():
     working_weights = compute_working_weights(split, history)
 
     # 4. Ask Gemini to build the structured workout plan
-    workout_plan = {
-    "exercises": [
-        {
-            "name": "Flat Bench Press",
-            "muscle": "Chest",
-            "sets": 4,
-            "reps": "8-10",
-            "weight_kg": 60,
-            "type": "normal",
-            "partner": None,
-            "note": "Control the eccentric."
-        },
-        {
-            "name": "Incline Dumbbell Press",
-            "muscle": "Upper Chest",
-            "sets": 3,
-            "reps": "10-12",
-            "weight_kg": 20,
-            "type": "superset",
-            "partner": "Cable Fly",
-            "note": None
-        }
-    ],
-    "cardio": {
-        "exercise": "Incline Treadmill Walk",
-        "duration": "20 min",
-        "hr_target": "125-135 BPM",
-        "note": "Steady pace."
-    }
-}
+    workout_plan = gemini_helper.generate_workout(split, working_weights, history)
 
     # 5. Log today's session to Sheets
     sheets_helper.log_session(today, split, workout_plan)
