@@ -57,28 +57,69 @@ TODAY'S SPLIT: {split}
 CURRENT WORKING WEIGHTS (already calculated with progressive overload):
 {json.dumps(working_weights, indent=2)}
 
-RECENT HISTORY FOR THIS SPLIT:
+RECENT HISTORY FOR THIS SPLIT (use this to vary focus and avoid repeating the same angles):
 {history_summary}
 
-RULES:
-1. Use the working_kg values provided — do NOT change the weights.
-2. Vary exercise order and superset/dropset combinations compared to previous sessions.
-3. Add 1-2 supersets and 1 dropset per session for intensity.
-4. Include a cardio finisher for fat loss (LISS, 15-20 min, suitable after this split).
-5. For leg day: lower cardio intensity (10 min only) since legs are taxing.
-6. Add a short coaching note for any technically demanding exercise.
+MUSCLE HEAD TARGETING GUIDE — use this to ensure complete development:
 
-RESPOND ONLY WITH THIS EXACT JSON FORMAT (no markdown, no explanation):
+PUSH (Chest + Triceps):
+  Chest zones:
+    - Upper chest: Incline Barbell/DB Press, Incline Cable Fly, Low-to-High Cable Fly
+    - Middle chest: Flat Bench Press, Pec Dec Fly, Cable Crossover at chest height
+    - Lower chest: Decline Press, Dips (forward lean), High-to-Low Cable Fly
+  Tricep heads:
+    - Long head (biggest): Overhead Tricep Extension, Skull Crushers — arm must go OVERHEAD to fully stretch long head
+    - Lateral head: Straight Bar Pushdown, Close Grip Bench Press
+    - Medial head: Reverse Grip Pushdown, Dips (upright torso)
+  Strategy: Intelligently vary chest zone emphasis and tricep head focus between Push Day 1 and Push Day 2 based on history. Cover different angles each session so all zones get trained across the week.
+
+PULL (Back + Biceps):
+  Back focus:
+    - Width (V-taper): Lat Pulldown, Wide Grip Pull-Up, Straight Arm Pushdown
+    - Thickness (mass): Barbell/DB Row, Seated Cable Row, T-Bar Row
+    - Rear delts: Face Pulls, Reverse Pec Dec, Bent Over Lateral Raise
+  Bicep heads:
+    - Long head (peak): Incline DB Curl, Hammer Curl (also hits brachialis)
+    - Short head (width): Preacher Curl, Concentration Curl, Close Grip Barbell Curl
+  Strategy: Alternate between width-focus and thickness-focus across Pull Day 1 and Pull Day 2.
+
+LEGS:
+  - Quads: Barbell Squat, Leg Press, Hack Squat, Leg Extension
+  - Hamstrings: Romanian Deadlift, Leg Curl, Stiff Leg Deadlift
+  - Glutes: Hip Thrust, Bulgarian Split Squat, Sumo Squat
+  - Calves: Standing Calf Raise (gastrocnemius), Seated Calf Raise (soleus)
+  Strategy: Hit all four leg muscle groups every session.
+
+SHOULDERS:
+  - Front delt: Overhead Press (already worked in Push — minimal extra volume needed)
+  - Side delt (KEY for width): Lateral Raises, Cable Lateral Raise, Machine Lateral Raise
+  - Rear delt (KEY for posture): Reverse Pec Dec, Face Pulls, Bent Over Lateral Raise
+  - Traps: Shrugs, Upright Row
+  Strategy: Prioritise side delts and rear delts heavily since front delts get volume from Push days.
+
+RULES:
+1. Generate EXACTLY 7 exercises — no more, no less.
+2. Use the working_kg values provided — do NOT change the weights.
+3. Vary exercise selection and muscle zone focus compared to the recent history shown above.
+4. Add exactly 1-2 supersets and exactly 1 dropset per session for intensity.
+5. Include a cardio finisher for fat loss (LISS, 15-20 min, suitable after this split).
+6. For leg day: cardio is 10 min only (legs are taxing enough).
+7. Add a short coaching note for any technically demanding exercise.
+8. Choose rep ranges appropriate to the exercise: compounds 4-6 or 6-8, isolations 10-15.
+9. ALTERNATIVES: For compound barbell lifts (Bench Press, Deadlift, Squat, Overhead Press, Barbell Row) set alternative to null — these are compulsory. For all machine-based and isolation exercises, provide exactly 1 alternative exercise that targets the same muscle head, formatted as: "Alt: Exercise Name (same muscle target)".
+
+RESPOND ONLY WITH THIS EXACT JSON FORMAT (no markdown, no explanation, no text before or after):
 {{
   "exercises": [
     {{
       "name": "Exercise Name",
-      "muscle": "Target Muscle",
+      "muscle": "Muscle Head — Anatomical Name (e.g. Upper Chest — Clavicular Head (Pectoralis Major), Triceps — Long Head (Triceps Brachii), Side Delt — Medial Deltoid)",
       "sets": 4,
-      "reps": "8-10",
+      "reps": "6-8",
       "weight_kg": 60,
       "type": "normal|superset|dropset",
       "partner": "Superset partner exercise name or null",
+      "alternative": "Alt: Exercise Name (same muscle target) or null for compound lifts",
       "note": "Optional coaching tip or null"
     }}
   ],
