@@ -7,7 +7,7 @@ GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
 # gemini-1.5-flash-8b has the most generous free limits:
 # 15 RPM, 1000 RPD, 1M tokens/day — perfect for one daily call
-MODEL = "gemini-1.5-flash-8b"
+MODEL = "gemini-3-flash-preview"
 GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
     f"{MODEL}:generateContent?key={GEMINI_API_KEY}"
