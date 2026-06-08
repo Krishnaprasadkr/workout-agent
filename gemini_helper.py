@@ -108,7 +108,7 @@ RULES:
 8. Choose rep ranges appropriate to the exercise: compounds 4-6 or 6-8, isolations 10-15.
 9. ALTERNATIVES: For compound barbell lifts (Bench Press, Deadlift, Squat, Overhead Press, Barbell Row) set alternative to null — these are compulsory. For all machine-based and isolation exercises, provide exactly 1 alternative exercise that targets the same muscle head, formatted as: "Alt: Exercise Name (same muscle target)".
 
-RESPOND ONLY WITH THIS EXACT JSON FORMAT (no markdown, no explanation, no text before or after):
+CRITICAL: Your response must start with {{ and end with }}. Use literal curly braces. Do NOT use *, **, ***, backticks, or any markdown. No explanation, no preamble, no text before or after the JSON:
 {{
   "exercises": [
     {{
@@ -178,12 +178,15 @@ Keep it under 250 words. Format for Telegram (use *bold* for headings).
 def _extract_json(raw: str) -> dict:
     """
     Robustly extract JSON from Gemini's response.
-    Handles cases where the model wraps JSON in markdown fences
-    or adds conversational text before/after the JSON block.
-    Strategy: find the first '{' and last '}' and extract everything between.
+    Handles markdown stars (***), fences (```), and extra text
+    before/after the JSON block.
     """
-    # Find the outermost JSON object using regex
-    match = re.search(r'\{.*\}', raw, re.DOTALL)
+    # Step 1: strip all markdown characters Gemini might wrap around JSON
+    cleaned = raw.replace("***", "").replace("**", "").replace("*", "")
+    cleaned = cleaned.replace("```json", "").replace("```", "")
+
+    # Step 2: find the outermost { ... } block
+    match = re.search(r'\{.*\}', cleaned, re.DOTALL)
     if not match:
         print(f"[Gemini] Full raw response for debugging:\n{raw}")
         raise ValueError(
