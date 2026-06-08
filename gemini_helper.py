@@ -134,7 +134,11 @@ CRITICAL: Your response must start with {{ and end with }}. Use literal curly br
 
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.7, "maxOutputTokens": 2000},
+        "generationConfig": {
+            "temperature": 0.7,
+            "maxOutputTokens": 2000,
+            "response_mime_type": "application/json",
+        },
     }
 
     raw = _call_gemini(body)
