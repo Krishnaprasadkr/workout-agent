@@ -133,11 +133,13 @@ def build_workout_message(today, split, workout_plan):
             tag = " 🔽 DROPSET"
 
         lines.append(f"\n*{i}. {ex['name']}*{tag}")
-        lines.append(f"   🎯 Target: {ex['muscle']}")
+        lines.append(f"   🎯 Muscle: {ex['muscle']}")
         lines.append(f"   📊 Sets × Reps: {ex['sets']} × {ex['reps']}")
         lines.append(f"   🏋️ Weight: {ex['weight_kg']}kg")
         if ex.get("partner"):
             lines.append(f"   ↪️ With: {ex['partner']}")
+        if ex.get("alternative"):
+            lines.append(f"   🔄 If occupied: {ex['alternative']}")
         if ex.get("note"):
             lines.append(f"   💡 {ex['note']}")
 
