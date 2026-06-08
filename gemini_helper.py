@@ -1,12 +1,12 @@
 import os
+import re
 import json
 import time
 import requests
 
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
-# gemini-1.5-flash-8b has the most generous free limits:
-# 15 RPM, 1000 RPD, 1M tokens/day — perfect for one daily call
+# gemini-3-flash-preview: free tier, 10 RPM, 1500 RPD — perfect for one daily call
 MODEL = "gemini-3-flash-preview"
 GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
@@ -35,6 +35,7 @@ def _call_gemini(body: dict) -> str:
 
         resp.raise_for_status()
         raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+        print(f"[Gemini] Raw response (first 300 chars): {raw[:300]}")
         return raw
 
     raise RuntimeError(
@@ -92,12 +93,11 @@ RESPOND ONLY WITH THIS EXACT JSON FORMAT (no markdown, no explanation):
 
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1500},
+        "generationConfig": {"temperature": 0.7, "maxOutputTokens": 2000},
     }
 
     raw = _call_gemini(body)
-    clean = raw.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
-    return json.loads(clean)
+    return _extract_json(raw)
 
 
 def generate_weekly_summary(history):
@@ -132,6 +132,29 @@ Keep it under 250 words. Format for Telegram (use *bold* for headings).
 
     raw = _call_gemini(body)
     return f"📊 *Weekly Summary*\n━━━━━━━━━━━━━━━━━━━━━━\n{raw.strip()}"
+
+
+def _extract_json(raw: str) -> dict:
+    """
+    Robustly extract JSON from Gemini's response.
+    Handles cases where the model wraps JSON in markdown fences
+    or adds conversational text before/after the JSON block.
+    Strategy: find the first '{' and last '}' and extract everything between.
+    """
+    # Find the outermost JSON object using regex
+    match = re.search(r'\{.*\}', raw, re.DOTALL)
+    if not match:
+        print(f"[Gemini] Full raw response for debugging:\n{raw}")
+        raise ValueError(
+            "Gemini did not return a valid JSON object. "
+            f"Raw response was: {raw[:500]}"
+        )
+    clean = match.group(0)
+    try:
+        return json.loads(clean)
+    except json.JSONDecodeError as e:
+        print(f"[Gemini] JSON parse failed. Extracted text:\n{clean[:500]}")
+        raise ValueError(f"Gemini returned malformed JSON: {e}") from e
 
 
 def _summarise_history(history, split):
