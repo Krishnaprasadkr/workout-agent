@@ -1,12 +1,47 @@
 import os
 import json
+import time
 import requests
 
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+
+# gemini-1.5-flash-8b has the most generous free limits:
+# 15 RPM, 1000 RPD, 1M tokens/day — perfect for one daily call
+MODEL = "gemini-1.5-flash-8b"
 GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
-    "gemini-2.0-flash:generateContent?key=" + GEMINI_API_KEY
+    f"{MODEL}:generateContent?key={GEMINI_API_KEY}"
 )
+
+MAX_RETRIES = 4
+INITIAL_WAIT = 15  # seconds before first retry after 429
+
+
+def _call_gemini(body: dict) -> str:
+    """Call Gemini with exponential backoff on 429 errors."""
+    wait = INITIAL_WAIT
+    for attempt in range(1, MAX_RETRIES + 1):
+        resp = requests.post(GEMINI_URL, json=body, timeout=60)
+
+        if resp.status_code == 429:
+            # Check if Gemini tells us how long to wait
+            retry_after = int(resp.headers.get("Retry-After", wait))
+            actual_wait = max(retry_after, wait)
+            print(f"[Gemini] 429 Rate limit hit. Attempt {attempt}/{MAX_RETRIES}. "
+                  f"Waiting {actual_wait}s before retry...")
+            time.sleep(actual_wait)
+            wait *= 2  # exponential backoff: 15 → 30 → 60 → 120
+            continue
+
+        resp.raise_for_status()
+        raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+        return raw
+
+    raise RuntimeError(
+        f"Gemini API still returning 429 after {MAX_RETRIES} retries. "
+        "Try running the agent again in a few minutes."
+    )
+
 
 def generate_workout(split, working_weights, history):
     """Ask Gemini to generate a structured workout plan for today."""
@@ -60,11 +95,7 @@ RESPOND ONLY WITH THIS EXACT JSON FORMAT (no markdown, no explanation):
         "generationConfig": {"temperature": 0.7, "maxOutputTokens": 1500},
     }
 
-    resp = requests.post(GEMINI_URL, json=body, timeout=30)
-    resp.raise_for_status()
-    raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
-
-    # Strip markdown fences if present
+    raw = _call_gemini(body)
     clean = raw.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
     return json.loads(clean)
 
@@ -73,36 +104,38 @@ def generate_weekly_summary(history):
     """Ask Gemini to generate a Sunday weekly summary."""
 
     last_7 = history[-7:] if len(history) >= 7 else history
-    summary_data = json.dumps(last_7, indent=2)
+    # Only send exercise_names + split + date to keep tokens low
+    slim = [
+        {"date": h.get("date"), "split": h.get("split"),
+         "exercises": h.get("exercise_names", ""), "volume": h.get("total_volume_kg", 0)}
+        for h in last_7
+    ]
 
     prompt = f"""
-You are a personal trainer. Here is the last 7 days of workout logs for an advanced gym goer:
+You are a personal trainer. Here are the last 7 days of workout logs:
 
-{summary_data}
+{json.dumps(slim, indent=2)}
 
-Write a concise, motivating weekly summary in plain text (no JSON) covering:
+Write a concise weekly summary for Telegram covering:
 1. Sessions completed and splits done
-2. Total estimated volume (sets × reps × weight) per muscle group
-3. Exercises where progressive overload was applied
-4. 2-3 specific recommendations for next week
-5. A short motivational closing line
+2. Volume highlights per muscle group
+3. 2-3 specific recommendations for next week
+4. A short motivational closing line
 
-Keep it under 300 words. Use emoji sparingly. Format for Telegram (use *bold* for headings).
+Keep it under 250 words. Format for Telegram (use *bold* for headings).
 """
 
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {"temperature": 0.6, "maxOutputTokens": 600},
+        "generationConfig": {"temperature": 0.6, "maxOutputTokens": 500},
     }
 
-    resp = requests.post(GEMINI_URL, json=body, timeout=30)
-    resp.raise_for_status()
-    raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
+    raw = _call_gemini(body)
     return f"📊 *Weekly Summary*\n━━━━━━━━━━━━━━━━━━━━━━\n{raw.strip()}"
 
 
 def _summarise_history(history, split):
-    """Return last 2 sessions of the same split as a readable string."""
+    """Return last 2 sessions of the same split — minimal tokens."""
     same = [h for h in history if h.get("split") == split][-2:]
     if not same:
         return "No previous sessions for this split yet."
