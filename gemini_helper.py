@@ -71,34 +71,69 @@ def _call_gemini(body: dict) -> str:
 
 def _extract_json(raw: str) -> dict:
     """
-    Extract JSON from response.
-    Primary: looks for <json>...</json> tags.
-    Fallback: strips markdown and finds outermost { } block.
+    Extract JSON from Gemini response.
+    Handles <json> tags, *** replacing braces/brackets, and markdown fences.
     """
-    # Primary: tag-based extraction
+    # Step 1: grab content inside <json>...</json> tags if present
     tag_match = re.search(r'<json>(.*?)</json>', raw, re.DOTALL)
-    if tag_match:
-        candidate = tag_match.group(1).strip()
-        try:
-            return json.loads(candidate)
-        except json.JSONDecodeError as e:
-            print(f"[Gemini] Tag content found but invalid JSON: {e}")
+    content = tag_match.group(1).strip() if tag_match else raw
 
-    # Fallback: strip markdown characters and find outermost { }
-    cleaned = raw
-    for ch in ["```json", "```", "***", "**", "*"]:
-        cleaned = cleaned.replace(ch, "")
+    # Step 2: strip markdown fences
+    for ch in ["```json", "```"]:
+        content = content.replace(ch, "")
+    content = content.strip()
 
-    brace_match = re.search(r'\{.*\}', cleaned, re.DOTALL)
+    # Step 3: if *** is being used instead of { } — fix it
+    # Gemini sometimes replaces { and } (and even [ ]) with ***
+    # We detect this when *** is present but { is absent
+    if "***" in content and "{" not in content:
+        content = _rebuild_from_stars(content)
+
+    # Step 4: find outermost { } block and parse
+    brace_match = re.search(r'\{.*\}', content, re.DOTALL)
     if brace_match:
         candidate = brace_match.group(0)
         try:
             return json.loads(candidate)
         except json.JSONDecodeError as e:
-            print(f"[Gemini] Brace fallback invalid JSON: {e}")
+            print(f"[Gemini] JSON parse failed: {e}")
+            print(f"[Gemini] Attempted:\n{candidate[:400]}")
 
     print(f"[Gemini] FULL raw response:\n{raw}")
-    raise ValueError(f"Could not extract valid JSON. First 300 chars: {raw[:300]}")
+    raise ValueError(f"Could not extract JSON. First 300 chars: {raw[:300]}")
+
+
+def _rebuild_from_stars(content: str) -> str:
+    """
+    Reconstruct valid JSON braces when Gemini uses *** instead of { and }.
+    Strategy: walk line by line, replace *** with { or } based on what follows.
+    - *** followed by a "key": line → opening {
+    - *** followed by a closing ] or another *** or end → closing }
+    - lone [ and ] are usually intact; only {} get replaced with ***
+    """
+    lines = content.split("\n")
+    out = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+        if stripped == "***":
+            # Peek ahead to decide open vs close
+            next_content = ""
+            for j in range(i + 1, min(i + 4, len(lines))):
+                ns = lines[j].strip()
+                if ns:
+                    next_content = ns
+                    break
+            # Opening brace if next meaningful line has a JSON key pattern
+            if re.match(r'^"[^"]+"\s*:', next_content) or next_content.startswith('"exercises"') or next_content.startswith('"cardio"'):
+                out.append(line.replace("***", "{"))
+            else:
+                out.append(line.replace("***", "}"))
+        else:
+            out.append(line)
+        i += 1
+    return "\n".join(out)
 
 
 def generate_workout(split, working_weights, history):
