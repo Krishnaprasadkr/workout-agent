@@ -80,7 +80,7 @@ def log_session(today: date, split: str, workout_plan: dict):
             reps_mid = (int(parts[0]) + int(parts[1])) / 2
         else:
             reps_mid = float(reps_str)
-        total_volume += ex.get("sets", 0) * reps_mid * ex.get("weight_kg", 0)
+        total_volume += (ex.get("sets") or 0) * reps_mid * (ex.get("weight_kg") or 0)
 
     row = [
         str(today),
