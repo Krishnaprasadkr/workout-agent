@@ -1,9 +1,12 @@
 import os
 import json
 from datetime import datetime, date
+from zoneinfo import ZoneInfo
 import sheets_helper
 import telegram_helper
 import gemini_helper
+
+IST = ZoneInfo("Asia/Kolkata")
 
 # ── Split rotation ────────────────────────────────────────────────────────────
 SPLIT_ORDER = ["Push", "Pull", "Legs", "Push", "Pull", "Shoulders", "Rest"]
@@ -41,8 +44,8 @@ BASELINE = {
 }
 
 def main():
-    today = date.today()
-    print(f"[{today}] Workout Agent starting...")
+    today = datetime.now(IST).date()
+    print(f"[{today}] Workout Agent starting... (IST timezone)")
 
     # 1. Read history from Google Sheets
     history = sheets_helper.get_history()
