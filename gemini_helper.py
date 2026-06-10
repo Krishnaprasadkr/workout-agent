@@ -117,10 +117,23 @@ RECENT HISTORY FOR THIS SPLIT (vary exercises and muscle zones from these):
 {history_summary}
 
 MUSCLE TARGETING GUIDE:
-PUSH: Chest: Upper=Incline Press/Fly, Middle=Flat Bench/Pec Dec, Lower=Decline/High-to-Low Cable. Triceps: Long Head=Overhead Extension/Skull Crushers, Lateral=Bar Pushdown/CG Bench, Medial=Reverse Pushdown. Vary zones between Push Day 1 and Push Day 2.
-PULL: Back: Width=Lat Pulldown/Pullup, Thickness=Barbell Row/Cable Row, Rear=Face Pulls/Reverse Pec Dec. Biceps: Long Head=Incline Curl/Hammer, Short Head=Preacher/Concentration. Alternate width vs thickness.
-LEGS: Quads=Squat/Leg Press, Hamstrings=RDL/Leg Curl, Glutes=Hip Thrust/Bulgarian Split Squat, Calves=Calf Raise.
-SHOULDERS: Prioritise Side Delts and Rear Delts. Front delts already hit on Push days.
+PUSH (CHEST + TRICEPS ONLY — NO shoulder exercises):
+  Chest zones: Upper=Incline Press/Fly, Middle=Flat Bench/Pec Dec, Lower=Decline/High-to-Low Cable Fly.
+  Triceps heads: Long Head=Overhead Extension/Skull Crushers (arm overhead), Lateral=Bar Pushdown/Close Grip Bench, Medial=Reverse Grip Pushdown.
+  ⚠️ STRICT RULE: For PUSH sessions, use ONLY chest and tricep exercises. Do NOT include any shoulder, lateral raise, rear delt, or overhead press exercises. Shoulders have their own dedicated day.
+  Vary chest zone emphasis and tricep head focus between Push Day 1 and Push Day 2.
+
+PULL (BACK + BICEPS ONLY — NO shoulder exercises):
+  Back: Width=Lat Pulldown/Pullup, Thickness=Barbell Row/Cable Row, Rear Delt=Face Pulls/Reverse Pec Dec.
+  Biceps: Long Head (peak)=Incline Curl/Hammer Curl, Short Head (width)=Preacher/Concentration Curl.
+  Alternate width vs thickness focus across Pull Day 1 and Pull Day 2.
+
+LEGS (LOWER BODY ONLY):
+  Quads=Squat/Leg Press, Hamstrings=RDL/Leg Curl, Glutes=Hip Thrust/Bulgarian Split Squat, Calves=Standing/Seated Calf Raise.
+  Hit all four muscle groups every leg session.
+
+SHOULDERS (DEDICATED DAY — deltoids and traps only):
+  Side Delts (priority)=Lateral Raises/Cable Lateral, Rear Delts (priority)=Reverse Pec Dec/Face Pulls/Bent Over Lateral, Front Delts (minimal — already trained on Push)=Light OHP, Traps=Shrugs/Upright Row.
 
 RULES:
 1. Exactly 7 exercises.
