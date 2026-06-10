@@ -8,9 +8,6 @@ import gemini_helper
 
 IST = ZoneInfo("Asia/Kolkata")
 
-# ── Split rotation ────────────────────────────────────────────────────────────
-SPLIT_ORDER = ["Push", "Pull", "Legs", "Push", "Pull", "Shoulders", "Rest"]
-
 # ── Baseline strength profile (your current maxes) ───────────────────────────
 BASELINE = {
     "Push": [
@@ -82,19 +79,22 @@ def main():
         print("Weekly summary sent.")
 
 def determine_split(history, today):
-    """Determine today's split based on last session in history."""
-    if not history:
-        return SPLIT_ORDER[0]
-    last_split = history[-1].get("split", "Rest")
-    if last_split == "Rest":
-        last_idx = SPLIT_ORDER.index("Rest")
-    else:
-        try:
-            last_idx = SPLIT_ORDER.index(last_split)
-        except ValueError:
-            last_idx = -1
-    next_idx = (last_idx + 1) % len(SPLIT_ORDER)
-    return SPLIT_ORDER[next_idx]
+    """
+    Determine today's split based on fixed day-of-week schedule.
+    Monday=0, Sunday=6
+    """
+    DAY_SPLIT = {
+        0: "Push",       # Monday
+        1: "Pull",       # Tuesday
+        2: "Shoulders",  # Wednesday
+        3: "Push",       # Thursday
+        4: "Pull",       # Friday
+        5: "Legs",       # Saturday
+        6: "Rest",       # Sunday
+    }
+    split = DAY_SPLIT[today.weekday()]
+    print(f"Day of week: {today.strftime('%A')} → Split: {split}")
+    return split
 
 def compute_working_weights(split, history):
     """
