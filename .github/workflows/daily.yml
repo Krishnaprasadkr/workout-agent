@@ -2,13 +2,12 @@ name: Daily Workout Agent
 
 on:
   schedule:
-    # 10:30 UTC = 4:00 PM IST every day
+    # 07:30 UTC = 1:00 PM IST scheduled
+    # Accounts for GitHub's delay — arrives by 4-5 PM IST even on slow days
     - cron: "30 7 * * *"
   workflow_dispatch: # allows manual trigger from GitHub UI
 
 jobs:
-
-  # ── DAILY JOB: run the workout agent ─────────────────────────────────────
   run-agent:
     runs-on: ubuntu-latest
 
@@ -37,6 +36,7 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
-          GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS_JSON }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          SUPABASE_USER_ID: ${{ secrets.SUPABASE_USER_ID }}
         run: python workout_agent.py
