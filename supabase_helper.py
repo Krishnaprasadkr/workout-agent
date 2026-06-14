@@ -5,6 +5,9 @@ from datetime import date
 from supabase import create_client
 
 SUPABASE_URL = os.environ["SUPABASE_URL"].strip().rstrip("/")
+# Defensive: remove accidental /rest/v1 suffix — the client appends this itself
+if SUPABASE_URL.endswith("/rest/v1"):
+    SUPABASE_URL = SUPABASE_URL[: -len("/rest/v1")]
 SUPABASE_KEY = os.environ["SUPABASE_KEY"].strip()
 USER_ID = os.environ["SUPABASE_USER_ID"].strip()
 
