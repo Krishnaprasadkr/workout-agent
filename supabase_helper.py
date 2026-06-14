@@ -4,9 +4,12 @@ import json
 from datetime import date
 from supabase import create_client
 
-SUPABASE_URL = os.environ["SUPABASE_URL"]
-SUPABASE_KEY = os.environ["SUPABASE_KEY"]
-USER_ID = os.environ["SUPABASE_USER_ID"]
+SUPABASE_URL = os.environ["SUPABASE_URL"].strip().rstrip("/")
+SUPABASE_KEY = os.environ["SUPABASE_KEY"].strip()
+USER_ID = os.environ["SUPABASE_USER_ID"].strip()
+
+print(f"[Supabase] Connecting to: {SUPABASE_URL}")
+print(f"[Supabase] User ID: {USER_ID}")
 
 _client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
