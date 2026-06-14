@@ -2,7 +2,7 @@ import os
 import json
 from datetime import datetime, date
 from zoneinfo import ZoneInfo
-import sheets_helper
+import supabase_helper
 import telegram_helper
 import gemini_helper
 
@@ -44,9 +44,9 @@ def main():
     today = datetime.now(IST).date()
     print(f"[{today}] Workout Agent starting... (IST timezone)")
 
-    # 1. Read history from Google Sheets
-    history = sheets_helper.get_history()
-    print(f"Loaded {len(history)} past sessions from Sheets.")
+    # 1. Read history from Supabase
+    history = supabase_helper.get_history()
+    print(f"Loaded {len(history)} past sessions from Supabase.")
 
     # 2. Determine today's split
     split = determine_split(history, today)
@@ -64,8 +64,8 @@ def main():
     # 4. Ask Gemini to build the structured workout plan
     workout_plan = gemini_helper.generate_workout(split, working_weights, history)
 
-    # 5. Log today's session to Sheets
-    sheets_helper.log_session(today, split, workout_plan)
+    # 5. Log today's session to Supabase
+    supabase_helper.log_session(today, split, workout_plan)
 
     # 6. Build and send Telegram message
     msg = build_workout_message(today, split, workout_plan)
