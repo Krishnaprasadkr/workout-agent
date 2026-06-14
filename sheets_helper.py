@@ -1,4 +1,5 @@
 import os
+import re
 import json
 from datetime import date
 from google.oauth2.service_account import Credentials
@@ -75,11 +76,13 @@ def log_session(today: date, split: str, workout_plan: dict):
     total_volume = 0
     for ex in workout_plan.get("exercises", []):
         reps_str = str(ex.get("reps", "0"))
-        if "-" in reps_str:
-            parts = reps_str.split("-")
-            reps_mid = (int(parts[0]) + int(parts[1])) / 2
+        # Extract all numbers from reps string — handles "8-10", "12",
+        # "12 per leg", "10-12 each side", etc.
+        numbers = re.findall(r'\d+', reps_str)
+        if numbers:
+            reps_mid = sum(int(n) for n in numbers) / len(numbers)
         else:
-            reps_mid = float(reps_str)
+            reps_mid = 10  # safe fallback if no numbers found
         total_volume += (ex.get("sets") or 0) * reps_mid * (ex.get("weight_kg") or 0)
 
     row = [
