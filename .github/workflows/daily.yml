@@ -2,9 +2,9 @@ name: Daily Workout Agent
 
 on:
   schedule:
-    # 07:30 UTC = 1:00 PM IST scheduled
+    # 01:30 UTC = 7:00 AM IST scheduled
     # Accounts for GitHub's delay — arrives by 4-5 PM IST even on slow days
-    - cron: "30 7 * * *"
+    - cron: "30 1 * * *"
   workflow_dispatch: # allows manual trigger from GitHub UI
 
 jobs:
