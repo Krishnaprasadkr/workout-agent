@@ -248,16 +248,16 @@
   // ─────────────────────────────────────────────────────────────
   // CONFIG — fill these in before deploying
   // ─────────────────────────────────────────────────────────────
-  const SUPABASE_URL  = "https://gffjcpmxjlkxwztbtvof.supabase.co";
-  const SUPABASE_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmZmpjcG14amxreHd6dGJ0dm9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjAyMTAsImV4cCI6MjA5NjgzNjIxMH0.P3YEfOzyz5Ojh5utC71F2CIeaUif6SeAueYRN47Ivq8";
-  const USER_ID       = "c5cd2b52-0ad3-42b0-a675-c5be808e65bd";
+  const SUPABASE_URL  = "https://gffjcpmxjlkxwztbtvof.supabase.co";       // e.g. https://xxxxx.supabase.co
+  const SUPABASE_KEY  = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmZmpjcG14amxreHd6dGJ0dm9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjAyMTAsImV4cCI6MjA5NjgzNjIxMH0.P3YEfOzyz5Ojh5utC71F2CIeaUif6SeAueYRN47Ivq8";  // anon / public key
+  const USER_ID       = "c5cd2b52-0ad3-42b0-a675-c5be808e65bd";   // UUID from users table
 
   const SPLIT_COLORS = {
     Push: "var(--push)", Pull: "var(--pull)", Legs: "var(--legs)",
     Shoulders: "var(--shoulders)", Rest: "var(--rest)"
   };
 
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
   // ─────────────────────────────────────────────────────────────
   // Date helper — today's date in IST, regardless of browser TZ
@@ -309,7 +309,7 @@
     const today = getISTDateString();
     document.getElementById('dateLine').textContent = formatDateNice(today);
 
-    const { data: sessionRows, error: sessErr } = await supabase
+    const { data: sessionRows, error: sessErr } = await sb
       .from('sessions')
       .select('id, date, split, full_plan_json')
       .eq('user_id', USER_ID)
@@ -336,7 +336,7 @@
     document.documentElement.style.setProperty('--accent', SPLIT_COLORS[SESSION.split] || 'var(--push)');
 
     // Check for previously logged actuals today
-    const { data: prevRows } = await supabase
+    const { data: prevRows } = await sb
       .from('actual_workouts')
       .select('*')
       .eq('user_id', USER_ID)
@@ -566,7 +566,7 @@
     }
 
     // Replace any existing rows for today (delete then insert)
-    const { error: delErr } = await supabase
+    const { error: delErr } = await sb
       .from('actual_workouts')
       .delete()
       .eq('user_id', USER_ID)
@@ -579,7 +579,7 @@
       return;
     }
 
-    const { error: insErr } = await supabase.from('actual_workouts').insert(rows);
+    const { error: insErr } = await sb.from('actual_workouts').insert(rows);
 
     if (insErr){
       status.className = 'status-msg error';
