@@ -55,20 +55,28 @@
   }
   .brand{
     display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:6px; gap:12px;
+    margin-bottom:8px; gap:12px;
   }
   .brand-left{
-    display:flex; flex-direction:column; gap:2px;
+    display:flex; flex-direction:column; gap:4px;
   }
   .brand-logo{
-    height: 36px; width: auto;
-    filter: brightness(0) invert(1);  /* makes silver logo pure white on dark bg */
+    height: 56px; width: auto;
+    max-width: 220px;
+    filter: brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.15));
     object-fit: contain;
   }
+  /* Larger on desktop */
+  @media (min-width: 600px){
+    .brand-logo{ height: 72px; max-width: 280px; }
+  }
   .brand-tagline{
-    font-size: 11px; color: var(--text-dim);
-    letter-spacing: 0.06em; font-style: italic;
+    font-size: 12px; color: var(--text-dim);
+    letter-spacing: 0.05em; font-style: italic;
     margin: 0; padding: 0;
+  }
+  @media (min-width: 600px){
+    .brand-tagline{ font-size: 13px; }
   }
   .split-badge{
     font-family:'Oswald', sans-serif;
