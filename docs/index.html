@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-<title>FitBuddy — Today's Session</title>
+<title>Tatva — Today's Session</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,7 +46,7 @@
 
   /* ── Header ───────────────────────────────────────────── */
   header{
-    padding: 28px 20px 18px;
+    padding: 20px 20px 16px;
     border-bottom: 1px solid var(--line);
     position: sticky; top:0;
     background: rgba(20,23,28,0.92);
@@ -54,12 +54,21 @@
     z-index: 10;
   }
   .brand{
-    display:flex; align-items:baseline; justify-content:space-between;
-    margin-bottom:6px;
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:6px; gap:12px;
   }
-  .brand h1{
-    font-size: 28px; font-weight:700; margin:0;
-    text-transform: uppercase;
+  .brand-left{
+    display:flex; flex-direction:column; gap:2px;
+  }
+  .brand-logo{
+    height: 36px; width: auto;
+    filter: brightness(0) invert(1);  /* makes silver logo pure white on dark bg */
+    object-fit: contain;
+  }
+  .brand-tagline{
+    font-size: 11px; color: var(--text-dim);
+    letter-spacing: 0.06em; font-style: italic;
+    margin: 0; padding: 0;
   }
   .split-badge{
     font-family:'Oswald', sans-serif;
@@ -220,13 +229,50 @@
     color: var(--good); font-size:13px; padding:10px 14px; border-radius:10px;
     margin-bottom:14px;
   }
+
+  /* ── Alternative toggle ───────────────────────────────────── */
+  .alt-toggle-row{
+    display:flex; align-items:center; gap:10px; margin-top:10px;
+    padding: 8px 10px; border-radius:8px;
+    background: rgba(199,146,234,0.08); border:1px solid rgba(199,146,234,0.2);
+  }
+  .alt-toggle-label{
+    font-size:12px; color: var(--text-dim);
+    text-transform:uppercase; letter-spacing:0.07em; white-space:nowrap;
+  }
+  .alt-toggle-label.active{ color: var(--shoulders); font-weight:600; }
+  .toggle-switch{
+    position:relative; width:40px; height:22px; flex-shrink:0;
+  }
+  .toggle-switch input{ opacity:0; width:0; height:0; }
+  .toggle-track{
+    position:absolute; inset:0; border-radius:11px;
+    background: var(--line); cursor:pointer; transition: background 0.2s;
+  }
+  .toggle-track::before{
+    content:''; position:absolute;
+    width:16px; height:16px; border-radius:50%;
+    left:3px; top:3px;
+    background: var(--text-dim); transition: transform 0.2s, background 0.2s;
+  }
+  .toggle-switch input:checked + .toggle-track{ background: var(--shoulders); }
+  .toggle-switch input:checked + .toggle-track::before{
+    transform: translateX(18px); background: white;
+  }
+  .alt-name-label{
+    font-size:13px; color: var(--text-dim); flex:1; line-height:1.3;
+  }
+  .alt-name-label.active{ color: var(--shoulders); font-weight:500; }
 </style>
 </head>
 <body>
 
 <header>
   <div class="brand">
-    <h1>FitBuddy</h1>
+    <div class="brand-left">
+      <img src="tatva-logo.png" alt="Tatva" class="brand-logo" />
+      <p class="brand-tagline">The Essence of Becoming Better.</p>
+    </div>
     <span class="split-badge" id="splitBadge">—</span>
   </div>
   <p class="date-line" id="dateLine">Loading today's session…</p>
@@ -368,7 +414,17 @@
     }
 
     exercises.forEach((ex, i) => {
-      const prev = PREV_ACTUALS[ex.name];
+      // Parse clean alternative name — strip "Alt: " prefix
+      const altRaw = ex.alternative || '';
+      const altName = altRaw.replace(/^Alt:\s*/i, '').trim();
+      const hasAlt = altName.length > 0;
+
+      // Check if a previous save used the alternative for this slot
+      const prevMain = PREV_ACTUALS[ex.name];
+      const prevAlt  = hasAlt ? PREV_ACTUALS[altName] : null;
+      const usedAlt  = !prevMain && !!prevAlt;
+      const prev     = usedAlt ? prevAlt : prevMain;
+
       const defSets   = prev ? prev.actual_sets   : ex.sets;
       const defReps   = prev ? prev.actual_reps   : (String(ex.reps).match(/\d+(?:\.\d+)?/) || [ex.reps])[0];
       const defWeight = prev ? prev.actual_weight_kg : ex.weight_kg;
@@ -378,17 +434,28 @@
       if (ex.type === 'superset') badges += `<span class="badge superset">⚡ Superset</span>`;
       if (ex.type === 'dropset')  badges += `<span class="badge dropset">🔽 Dropset</span>`;
 
+      // Toggle switch HTML — only rendered when alternative exists
+      const toggleHtml = hasAlt ? `
+        <div class="alt-toggle-row">
+          <span class="alt-toggle-label ${usedAlt ? '' : 'active'}" data-role="main-lbl">Main</span>
+          <label class="toggle-switch">
+            <input type="checkbox" class="inp-alt-toggle" ${usedAlt ? 'checked' : ''}/>
+            <span class="toggle-track"></span>
+          </label>
+          <span class="alt-name-label ${usedAlt ? 'active' : ''}" data-role="alt-lbl">${escapeHtml(altName)}</span>
+        </div>` : '';
+
       html += `
-      <div class="card ${isSkipped ? 'skipped' : ''}" data-index="${i}">
+      <div class="card ${isSkipped ? 'skipped' : ''}" data-index="${i}" data-main-name="${escapeHtml(ex.name)}" data-alt-name="${escapeHtml(altName)}">
         <div class="card-top">
           <div>
-            <p class="ex-name"><span class="ex-index">${i+1}.</span>${escapeHtml(ex.name)}</p>
+            <p class="ex-name"><span class="ex-index">${i+1}.</span><span class="inp-ex-display">${escapeHtml(usedAlt ? altName : ex.name)}</span></p>
             <div class="badges">${badges}</div>
           </div>
         </div>
         <p class="muscle">🎯 ${escapeHtml(ex.muscle || '')}</p>
         <p class="planned">Planned: <b>${ex.sets} × ${ex.reps}</b> @ <b>${ex.weight_kg}kg</b>${ex.partner ? ` &nbsp;↪ with ${escapeHtml(ex.partner)}` : ''}</p>
-        ${ex.alternative ? `<p class="meta-line alt">🔄 ${escapeHtml(ex.alternative)}</p>` : ''}
+        ${toggleHtml}
         ${ex.note ? `<p class="meta-line note">💡 ${escapeHtml(ex.note)}</p>` : ''}
 
         <div class="inputs">
@@ -434,6 +501,39 @@
     main.innerHTML = html;
     attachMicHandlers();
     attachSkipHandlers();
+    attachToggleHandlers();
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Alternative toggle — swap exercise name + clear/restore fields
+  // ─────────────────────────────────────────────────────────────
+  function attachToggleHandlers(){
+    document.querySelectorAll('.inp-alt-toggle').forEach(toggle => {
+      toggle.addEventListener('change', () => {
+        const card       = toggle.closest('.card');
+        const mainName   = card.dataset.mainName;
+        const altName    = card.dataset.altName;
+        const display    = card.querySelector('.inp-ex-display');
+        const mainLbl    = card.querySelector('[data-role="main-lbl"]');
+        const altLbl     = card.querySelector('[data-role="alt-lbl"]');
+        const setsInp    = card.querySelector('.inp-sets');
+        const repsInp    = card.querySelector('.inp-reps');
+        const weightInp  = card.querySelector('.inp-weight');
+        const usingAlt   = toggle.checked;
+
+        // Update displayed exercise name
+        display.textContent = usingAlt ? altName : mainName;
+
+        // Update toggle label styles
+        mainLbl.classList.toggle('active', !usingAlt);
+        altLbl.classList.toggle('active', usingAlt);
+
+        // Clear fields when switching — user fills in manually
+        setsInp.value   = '';
+        repsInp.value   = '';
+        weightInp.value = '';
+      });
+    });
   }
 
   function escapeHtml(str){
@@ -532,11 +632,16 @@
       const ex = EXERCISES[i];
       const skipped = card.querySelector('.inp-skip').checked;
 
+      // Determine which exercise name to save — main or alternative
+      const altToggle = card.querySelector('.inp-alt-toggle');
+      const usingAlt  = altToggle && altToggle.checked;
+      const savedName = usingAlt ? card.dataset.altName : ex.name;
+
       rows.push({
         user_id: USER_ID,
         session_id: SESSION.id,
         date: today,
-        exercise_name: ex.name,
+        exercise_name: savedName,
         planned_sets: ex.sets,
         planned_reps: String(ex.reps),
         planned_weight_kg: ex.weight_kg,
@@ -544,7 +649,7 @@
         actual_reps: skipped ? null : card.querySelector('.inp-reps').value || null,
         actual_weight_kg: skipped ? null : parseFloat(card.querySelector('.inp-weight').value) || null,
         skipped: skipped,
-        notes: null
+        notes: usingAlt ? `Used alternative: ${savedName}` : null
       });
     });
 
