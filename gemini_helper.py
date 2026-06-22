@@ -8,9 +8,9 @@ GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
 # Model fallback chain — if one hits 429 or fails, tries the next
 MODELS = [
-    "gemini-2.0-flash-lite",
-    "gemini-1.5-flash",
-    "gemini-2.5-flash-lite",
+    "gemini-3-flash",        # Primary free tier model
+    "gemini-3.1-flash-lite", # High volume, lightweight
+    "gemini-2.5-flash",
 ]
 
 BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
