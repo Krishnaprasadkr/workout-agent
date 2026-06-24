@@ -209,9 +209,29 @@
   }
   .cardio-card p{ font-size:13px; color:var(--text-dim); margin:2px 0; }
 
+  /* ── Bottom nav ────────────────────────────────────────────── */
+  .bottom-nav{
+    position:fixed; bottom:0; left:0; right:0;
+    background:rgba(20,23,28,0.95); backdrop-filter:blur(10px);
+    border-top:1px solid var(--line);
+    display:flex; z-index:20;
+  }
+  .nav-btn{
+    flex:1; padding:14px 8px 18px; display:flex; flex-direction:column;
+    align-items:center; gap:4px; background:none; border:none;
+    color:var(--text-dim); font-size:10px; text-transform:uppercase;
+    letter-spacing:0.06em; cursor:pointer; text-decoration:none;
+    font-family:'Inter',sans-serif; font-weight:600;
+  }
+  .nav-btn.active{ color:var(--accent); }
+  .nav-icon{ font-size:20px; line-height:1; }
+
   /* ── Footer save bar ──────────────────────────────────────── */
-  .save-bar{
-    position: fixed; bottom:0; left:0; right:0;
+/* ── Bottom nav ── */
+.bottom-nav{ position:fixed; bottom:0; left:0; right:0; background:rgba(20,23,28,0.95); backdrop-filter:blur(10px); border-top:1px solid var(--line); display:flex; z-index:20; }
+.nav-item{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px 8px; gap:4px; text-decoration:none; color:var(--text-dim); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; transition:color 0.15s; }
+.nav-item.active{ color:var(--accent); }
+.nav-item .nav-icon{ font-size:20px; }
     background: rgba(20,23,28,0.92); backdrop-filter: blur(10px);
     border-top: 1px solid var(--line);
     padding: 14px 16px; display:flex; flex-direction:column; gap:8px;
@@ -292,6 +312,15 @@
     <div>Fetching today's plan from Supabase…</div>
   </div>
 </main>
+
+<nav class="bottom-nav" style="bottom:84px">
+  <a href="index.html" class="nav-item active">
+    <span class="nav-icon">🏋️</span>Today
+  </a>
+  <a href="dashboard.html" class="nav-item">
+    <span class="nav-icon">📊</span>Dashboard
+  </a>
+</nav>
 
 <div class="save-bar" id="saveBar" style="display:none;">
   <div class="status-msg" id="statusMsg"></div>
