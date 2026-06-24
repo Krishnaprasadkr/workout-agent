@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1"/>
 <title>Tatva — Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,117 +11,97 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 :root{
-  --bg:#14171C; --panel:#1D2229; --panel-2:#242A33; --line:#323844;
-  --text:#F2F4F7; --text-dim:#9AA3B2;
-  --push:#FF8C5A; --pull:#5AA9E6; --legs:#6EDE8A; --shoulders:#C792EA; --rest:#9AA3B2;
-  --good:#6EDE8A; --warn:#FFD166; --bad:#FF6B6B; --gold:#FFD700;
-  --accent:#FF8C5A;
+  --bg:#14171C;--panel:#1D2229;--panel-2:#242A33;--line:#323844;
+  --text:#F2F4F7;--text-dim:#9AA3B2;
+  --push:#FF8C5A;--pull:#5AA9E6;--legs:#6EDE8A;--shoulders:#C792EA;--rest:#4A5568;
+  --good:#6EDE8A;--warn:#FFD166;--bad:#FF6B6B;--gold:#FFD700;--accent:#FF8C5A;
 }
-*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-html,body{ margin:0; padding:0; background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; }
-.display{ font-family:'Oswald',sans-serif; letter-spacing:0.02em; }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;-webkit-font-smoothing:antialiased;}
 
-/* ── Header ── */
-header{
-  padding:20px 20px 14px; border-bottom:1px solid var(--line);
-  position:sticky; top:0; background:rgba(20,23,28,0.94);
-  backdrop-filter:blur(8px); z-index:10;
-}
-.brand{ display:flex; align-items:center; justify-content:space-between; gap:12px; }
-.brand-left{ display:flex; flex-direction:column; gap:4px; }
-.brand-logo{ height:52px; width:auto; max-width:260px; filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.15)); object-fit:contain; display:block; }
-@media(min-width:600px){ .brand-logo{ height:66px; max-width:340px; } }
-.brand-tagline{ font-size:11px; color:var(--text-dim); letter-spacing:0.05em; font-style:italic; margin:0; }
-.header-label{ font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; text-transform:uppercase; letter-spacing:0.12em; color:var(--text-dim); padding:5px 12px; border:1px solid var(--line); border-radius:999px; white-space:nowrap; }
+/* Header */
+header{padding:18px 20px 14px;border-bottom:1px solid var(--line);position:sticky;top:0;background:rgba(20,23,28,0.94);backdrop-filter:blur(8px);z-index:10;}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.brand-left{display:flex;flex-direction:column;gap:4px;}
+.brand-logo{height:52px;width:auto;max-width:260px;filter:brightness(0) invert(1) drop-shadow(0 0 8px rgba(255,255,255,0.15));object-fit:contain;display:block;}
+@media(min-width:600px){.brand-logo{height:66px;max-width:340px;}}
+.brand-tagline{font-size:11px;color:var(--text-dim);letter-spacing:0.05em;font-style:italic;margin:0;}
+.header-label{font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-dim);padding:5px 12px;border:1px solid var(--line);border-radius:999px;white-space:nowrap;}
 
-main{ max-width:680px; margin:0 auto; padding:16px 16px 120px; }
+main{max-width:680px;margin:0 auto;padding:14px 14px 130px;}
 
-/* ── Hero stats ── */
-.hero{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:20px; }
-.hero-card{ background:var(--panel); border-radius:14px; padding:16px 12px; text-align:center; border:1px solid var(--line); position:relative; overflow:hidden; }
-.hero-card.streak-active{ border-color:var(--push); background:rgba(255,140,90,0.08); }
-.hero-card.pr-active{ border-color:var(--gold); background:rgba(255,215,0,0.06); }
-.hero-icon{ font-size:22px; margin-bottom:6px; }
-.hero-num{ font-family:'Oswald',sans-serif; font-size:32px; font-weight:700; line-height:1; margin-bottom:4px; }
-.hero-num.streak-color{ color:var(--push); }
-.hero-num.pr-color{ color:var(--gold); }
-.hero-label{ font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.07em; }
+/* Hero */
+.hero{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px;}
+.hero-card{background:var(--panel);border-radius:14px;padding:14px 10px;text-align:center;border:1px solid var(--line);}
+.hero-card.streak-on{border-color:var(--push);background:rgba(255,140,90,0.08);}
+.hero-card.pr-on{border-color:var(--gold);background:rgba(255,215,0,0.06);}
+.hero-icon{font-size:20px;margin-bottom:4px;}
+.hero-num{font-family:'Oswald',sans-serif;font-size:30px;font-weight:700;line-height:1;margin-bottom:4px;}
+.hero-num.c-push{color:var(--push);}
+.hero-num.c-gold{color:var(--gold);}
+.hero-label{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.07em;}
 
-/* ── Tabs ── */
-.tabs{ display:flex; gap:6px; margin-bottom:18px; background:var(--panel); padding:6px; border-radius:12px; }
-.tab{ flex:1; text-align:center; padding:9px 4px; border-radius:8px; font-size:13px; font-weight:600; color:var(--text-dim); cursor:pointer; transition:all 0.15s; border:none; background:none; }
-.tab.active{ background:var(--accent); color:#14171C; }
+/* Tabs */
+.tabs{display:flex;gap:6px;margin-bottom:16px;background:var(--panel);padding:5px;border-radius:12px;}
+.tab{flex:1;text-align:center;padding:8px 4px;border-radius:8px;font-size:13px;font-weight:600;color:var(--text-dim);cursor:pointer;transition:all 0.15s;border:none;background:none;}
+.tab.active{background:var(--accent);color:#14171C;}
 
-/* ── Section headings ── */
-.section-title{ font-family:'Oswald',sans-serif; font-size:15px; text-transform:uppercase; letter-spacing:0.08em; color:var(--text-dim); margin:20px 0 10px; }
+/* Section title */
+.stitle{font-family:'Oswald',sans-serif;font-size:14px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-dim);margin:18px 0 8px;}
 
-/* ── Cards ── */
-.card{ background:var(--panel); border-radius:14px; padding:16px; margin-bottom:12px; border:1px solid var(--line); }
-.card-row{ display:flex; justify-content:space-between; align-items:center; gap:8px; }
-.card-label{ font-size:13px; color:var(--text-dim); }
-.card-value{ font-family:'Oswald',sans-serif; font-size:18px; font-weight:600; }
+/* Cards */
+.card{background:var(--panel);border-radius:14px;padding:14px;margin-bottom:10px;border:1px solid var(--line);}
+.card-row{display:flex;justify-content:space-between;align-items:center;gap:8px;}
+.clabel{font-size:13px;color:var(--text-dim);}
+.cval{font-family:'Oswald',sans-serif;font-size:17px;font-weight:600;}
 
-/* ── Heatmap row (weekly) ── */
-.week-heatmap{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; margin-bottom:12px; }
-.day-cell{ border-radius:8px; padding:8px 4px; text-align:center; }
-.day-cell .day-name{ font-size:10px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px; }
-.day-cell .day-split{ font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
-.day-cell.empty{ background:var(--panel-2); }
-.day-cell.rest{ background:rgba(154,163,178,0.12); }
-.day-cell.push{ background:rgba(255,140,90,0.18); border:1px solid rgba(255,140,90,0.3); }
-.day-cell .day-split.push{ color:var(--push); }
-.day-cell.pull{ background:rgba(90,169,230,0.18); border:1px solid rgba(90,169,230,0.3); }
-.day-cell .day-split.pull{ color:var(--pull); }
-.day-cell.legs{ background:rgba(110,222,138,0.18); border:1px solid rgba(110,222,138,0.3); }
-.day-cell .day-split.legs{ color:var(--legs); }
-.day-cell.shoulders{ background:rgba(199,146,234,0.18); border:1px solid rgba(199,146,234,0.3); }
-.day-cell .day-split.shoulders{ color:var(--shoulders); }
+/* Week heatmap */
+.week-heatmap{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:12px;}
+.day-cell{border-radius:10px;padding:10px 4px;text-align:center;background:var(--panel-2);border:1px solid transparent;position:relative;}
+.day-cell.today-cell{outline:2px solid var(--accent);outline-offset:1px;}
+.day-cell.trained{background:var(--split-bg,var(--panel-2));border-color:var(--split-border,transparent);}
+.day-cell.missed{background:rgba(255,107,107,0.06);border-color:rgba(255,107,107,0.2);}
+.day-name{font-size:10px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;}
+.day-name.today-name{color:var(--accent);font-weight:700;}
+.day-split-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
+.day-vol{font-size:9px;color:var(--text-dim);margin-top:3px;}
+.dot{width:8px;height:8px;border-radius:50%;margin:4px auto 0;background:var(--split-color,var(--panel-2));}
 
-/* ── Completion bar ── */
-.completion-bar-bg{ background:var(--panel-2); border-radius:999px; height:8px; overflow:hidden; margin:8px 0; }
-.completion-bar-fill{ height:100%; border-radius:999px; background:var(--good); transition:width 0.6s ease; }
+/* Completion */
+.bar-bg{background:var(--panel-2);border-radius:999px;height:7px;overflow:hidden;margin:6px 0;}
+.bar-fill{height:100%;border-radius:999px;transition:width 0.6s ease;}
 
-/* ── Chart wrapper ── */
-.chart-wrap{ position:relative; height:200px; margin:8px 0; }
-.chart-wrap-tall{ position:relative; height:260px; margin:8px 0; }
+/* Charts */
+.chart-wrap{position:relative;height:200px;margin:6px 0;}
+.chart-tall{position:relative;height:260px;margin:6px 0;}
 
-/* ── Exercise dropdown ── */
-.ex-select{ width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--text); border-radius:8px; padding:10px 12px; font-size:14px; margin-bottom:12px; }
+/* Dropdown */
+.week-select,.ex-select{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--text);border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:12px;font-family:'Inter',sans-serif;}
 
-/* ── Yearly heatmap ── */
-.year-grid{ display:flex; gap:3px; overflow-x:auto; padding-bottom:6px; }
-.year-col{ display:flex; flex-direction:column; gap:3px; }
-.year-cell{ width:11px; height:11px; border-radius:2px; background:var(--panel-2); flex-shrink:0; }
-.year-cell.l1{ background:rgba(255,140,90,0.25); }
-.year-cell.l2{ background:rgba(255,140,90,0.5); }
-.year-cell.l3{ background:rgba(255,140,90,0.75); }
-.year-cell.l4{ background:var(--push); }
-.year-labels{ display:flex; gap:3px; overflow-x:auto; padding-bottom:2px; }
-.year-month-label{ font-size:9px; color:var(--text-dim); flex-shrink:0; }
+/* Stat grid */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.stat-card{background:var(--panel);border-radius:12px;padding:14px;border:1px solid var(--line);}
+.stat-card .val{font-family:'Oswald',sans-serif;font-size:24px;font-weight:700;margin-bottom:2px;}
+.stat-card .lbl{font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:0.06em;}
 
-/* ── Insight card ── */
-.insight-card{ background:rgba(255,140,90,0.08); border:1px solid rgba(255,140,90,0.25); border-radius:12px; padding:14px; margin-bottom:12px; }
-.insight-card p{ margin:0; font-size:14px; line-height:1.5; }
-.insight-icon{ font-size:18px; margin-bottom:6px; }
+/* Insight */
+.insight-card{background:rgba(255,140,90,0.07);border:1px solid rgba(255,140,90,0.22);border-radius:12px;padding:14px;margin-bottom:10px;}
+.insight-card p{margin:0;font-size:14px;line-height:1.55;}
 
-/* ── PR badge ── */
-.pr-badge{ display:inline-flex; align-items:center; gap:4px; background:rgba(255,215,0,0.12); border:1px solid rgba(255,215,0,0.3); color:var(--gold); font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; text-transform:uppercase; }
+/* Year heatmap */
+.year-wrap{overflow-x:auto;padding-bottom:6px;}
+.year-legend{display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap;}
+.legend-cell{width:11px;height:11px;border-radius:2px;}
 
-/* ── Empty state ── */
-.empty-state{ text-align:center; color:var(--text-dim); padding:40px 20px; }
-.empty-state .big{ font-family:'Oswald',sans-serif; font-size:18px; color:var(--text); margin-bottom:8px; text-transform:uppercase; }
+/* Empty */
+.empty{text-align:center;color:var(--text-dim);padding:40px 20px;}
+.empty .big{font-family:'Oswald',sans-serif;font-size:18px;color:var(--text);margin-bottom:8px;text-transform:uppercase;}
 
-/* ── Bottom nav ── */
-.bottom-nav{ position:fixed; bottom:0; left:0; right:0; background:rgba(20,23,28,0.95); backdrop-filter:blur(10px); border-top:1px solid var(--line); display:flex; z-index:20; }
-.nav-item{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:12px 8px; gap:4px; text-decoration:none; color:var(--text-dim); font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.06em; transition:color 0.15s; }
-.nav-item.active{ color:var(--accent); }
-.nav-item .nav-icon{ font-size:20px; }
-
-/* ── Stat row ── */
-.stat-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.stat-card{ background:var(--panel); border-radius:12px; padding:14px; border:1px solid var(--line); }
-.stat-card .val{ font-family:'Oswald',sans-serif; font-size:24px; font-weight:700; margin-bottom:2px; }
-.stat-card .lbl{ font-size:11px; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.07em; }
+/* Bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(20,23,28,0.96);backdrop-filter:blur(10px);border-top:1px solid var(--line);display:flex;z-index:20;}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 8px;gap:3px;text-decoration:none;color:var(--text-dim);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;transition:color 0.15s;}
+.nav-item.active{color:var(--accent);}
+.nav-icon{font-size:20px;}
 </style>
 </head>
 <body>
@@ -129,7 +109,7 @@ main{ max-width:680px; margin:0 auto; padding:16px 16px 120px; }
 <header>
   <div class="brand">
     <div class="brand-left">
-      <img src="tatva-logo.png" alt="Tatva" class="brand-logo" />
+      <img src="tatva-logo.png" alt="Tatva" class="brand-logo"/>
       <p class="brand-tagline">The Essence of Becoming Better.</p>
     </div>
     <span class="header-label">Dashboard</span>
@@ -137,8 +117,7 @@ main{ max-width:680px; margin:0 auto; padding:16px 16px 120px; }
 </header>
 
 <main>
-  <!-- Hero -->
-  <div class="hero" id="heroStats">
+  <div class="hero">
     <div class="hero-card" id="heroStreak">
       <div class="hero-icon">🔥</div>
       <div class="hero-num" id="streakNum">—</div>
@@ -146,7 +125,7 @@ main{ max-width:680px; margin:0 auto; padding:16px 16px 120px; }
     </div>
     <div class="hero-card">
       <div class="hero-icon">💪</div>
-      <div class="hero-num" id="totalSessionsNum">—</div>
+      <div class="hero-num" id="totalNum">—</div>
       <div class="hero-label">Total Sessions</div>
     </div>
     <div class="hero-card" id="heroPR">
@@ -156,7 +135,6 @@ main{ max-width:680px; margin:0 auto; padding:16px 16px 120px; }
     </div>
   </div>
 
-  <!-- Tabs -->
   <div class="tabs">
     <button class="tab" data-tab="daily">Daily</button>
     <button class="tab active" data-tab="weekly">Weekly</button>
@@ -164,609 +142,559 @@ main{ max-width:680px; margin:0 auto; padding:16px 16px 120px; }
     <button class="tab" data-tab="yearly">Yearly</button>
   </div>
 
-  <!-- Tab content -->
   <div id="tabContent"></div>
 </main>
 
 <nav class="bottom-nav">
-  <a href="index.html" class="nav-item">
-    <span class="nav-icon">🏋️</span>Today
-  </a>
-  <a href="dashboard.html" class="nav-item active">
-    <span class="nav-icon">📊</span>Dashboard
-  </a>
+  <a href="index.html" class="nav-item"><span class="nav-icon">🏋️</span>Today</a>
+  <a href="dashboard.html" class="nav-item active"><span class="nav-icon">📊</span>Dashboard</a>
 </nav>
 
 <script>
-// ── CONFIG ──────────────────────────────────────────────────────
+// ── CONFIG ────────────────────────────────────────────────────────
 const SUPABASE_URL = "https://gffjcpmxjlkxwztbtvof.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdmZmpjcG14amxreHd6dGJ0dm9mIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyNjAyMTAsImV4cCI6MjA5NjgzNjIxMH0.P3YEfOzyz5Ojh5utC71F2CIeaUif6SeAueYRN47Ivq8";
 const USER_ID      = "c5cd2b52-0ad3-42b0-a675-c5be808e65bd";
 
-const SPLIT_COLORS = { Push:'--push', Pull:'--pull', Legs:'--legs', Shoulders:'--shoulders', Rest:'--rest' };
+// Fixed day-of-week schedule — same as Python agent
+const DAY_SCHEDULE = {0:'Push',1:'Pull',2:'Shoulders',3:'Push',4:'Pull',5:'Legs',6:'Rest'};
+// 0=Mon,1=Tue,2=Wed,3=Thu,4=Fri,5=Sat,6=Sun (JS weekday adjusted below)
+
+const SPLIT_STYLE = {
+  Push:    {bg:'rgba(255,140,90,0.15)', border:'rgba(255,140,90,0.35)', color:'var(--push)'},
+  Pull:    {bg:'rgba(90,169,230,0.15)', border:'rgba(90,169,230,0.35)', color:'var(--pull)'},
+  Legs:    {bg:'rgba(110,222,138,0.15)',border:'rgba(110,222,138,0.35)',color:'var(--legs)'},
+  Shoulders:{bg:'rgba(199,146,234,0.15)',border:'rgba(199,146,234,0.35)',color:'var(--shoulders)'},
+  Rest:    {bg:'rgba(74,85,104,0.12)', border:'rgba(74,85,104,0.25)', color:'var(--rest)'},
+};
+
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ── DATE HELPERS ────────────────────────────────────────────────
-function istDate(d){ const ms = d.getTime()+(5.5*60+d.getTimezoneOffset())*60000; return new Date(ms); }
-function todayIST(){ return istDate(new Date()).toISOString().slice(0,10); }
-function addDays(dateStr, n){ const d=new Date(dateStr+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
-function weekStart(dateStr){ const d=new Date(dateStr+'T00:00:00'); const day=d.getDay(); const diff=day===0?-6:1-day; d.setDate(d.getDate()+diff); return d.toISOString().slice(0,10); }
-function fmt(dateStr){ return new Date(dateStr+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'}); }
-function dayName(dateStr){ return new Date(dateStr+'T00:00:00').toLocaleDateString('en-IN',{weekday:'short'}); }
+// ── IST DATE HELPERS ──────────────────────────────────────────────
+function nowIST(){ const d=new Date(); return new Date(d.getTime()+(5.5*60+d.getTimezoneOffset())*60000); }
+function todayIST(){ return nowIST().toISOString().slice(0,10); }
 
-// ── GLOBAL DATA ─────────────────────────────────────────────────
-let allSessions = [];
-let allActuals  = [];
-let activeTab   = 'weekly';
-let charts      = {};
+// Get day index 0=Mon..6=Sun from a date string
+function dayIndex(dateStr){
+  const jsDay = new Date(dateStr+'T12:00:00').getDay(); // noon avoids DST
+  return jsDay===0 ? 6 : jsDay-1; // convert Sun=0 to Mon=0 system
+}
+
+function scheduledSplit(dateStr){ return DAY_SCHEDULE[dayIndex(dateStr)]; }
+
+function addDays(dateStr,n){
+  const d=new Date(dateStr+'T12:00:00');
+  d.setDate(d.getDate()+n);
+  return d.toISOString().slice(0,10);
+}
+
+function mondayOfWeek(dateStr){
+  const di = dayIndex(dateStr);
+  return addDays(dateStr,-di);
+}
+
+function fmtShort(dateStr){
+  return new Date(dateStr+'T12:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+}
+function fmtFull(dateStr){
+  return new Date(dateStr+'T12:00:00').toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'short',year:'numeric'});
+}
+
+// ── GLOBAL STATE ──────────────────────────────────────────────────
+let allSessions=[], allActuals=[];
+let activeTab='weekly';
+let activeWeekStart=mondayOfWeek(todayIST());
+let charts={};
 
 async function loadData(){
-  const [sRes, aRes] = await Promise.all([
+  const [sRes,aRes] = await Promise.all([
     sb.from('sessions').select('*').eq('user_id',USER_ID).order('date',{ascending:true}),
     sb.from('actual_workouts').select('*').eq('user_id',USER_ID).order('date',{ascending:true})
   ]);
-  allSessions = sRes.data || [];
-  allActuals  = aRes.data || [];
+  allSessions = sRes.data||[];
+  allActuals  = aRes.data||[];
 }
 
-// ── HERO STATS ──────────────────────────────────────────────────
+// ── HERO STATS ────────────────────────────────────────────────────
 function computeHero(){
   const today = todayIST();
 
-  // Streak — consecutive training days ending today or yesterday
-  const sessionDates = [...new Set(allSessions.map(s=>s.date))].sort();
-  let streak = 0;
-  let check = today;
-  for(let i=sessionDates.length-1; i>=0; i--){
-    const d = sessionDates[i];
-    if(d === check || d === addDays(check,-1)){
-      // only count non-rest days
-      const s = allSessions.find(s=>s.date===d);
-      if(s && s.split !== 'Rest'){ streak++; check = addDays(d,-1); }
-      else if(d===check) break;
-      else check = addDays(check,-1);
-    } else break;
+  // Streak: consecutive days with a non-Rest session ending today
+  const trainedDates = new Set(
+    allSessions.filter(s=>s.split!=='Rest').map(s=>s.date)
+  );
+  let streak=0, check=today;
+  while(true){
+    if(scheduledSplit(check)==='Rest'){
+      // Rest days don't break streak, skip back
+      check=addDays(check,-1); if(streak>30) break; continue;
+    }
+    if(trainedDates.has(check)){ streak++; check=addDays(check,-1); }
+    else break;
   }
 
-  // PRs this month — compare actual weights to previous best per exercise
+  // Total sessions (non-rest, non-duplicate dates)
+  const uniqueTrainingDates = new Set(
+    allSessions.filter(s=>s.split!=='Rest').map(s=>s.date)
+  );
+  const totalSessions = uniqueTrainingDates.size;
+
+  // PRs this month — strict: actual weight this month > best previous actual weight
   const monthStart = today.slice(0,7)+'-01';
-  const thisMonthActuals = allActuals.filter(a=>a.date>=monthStart && a.actual_weight_kg);
-  const prevActuals = allActuals.filter(a=>a.date<monthStart && a.actual_weight_kg);
-  const prevBest = {};
-  prevActuals.forEach(a=>{ prevBest[a.exercise_name]=Math.max(prevBest[a.exercise_name]||0, a.actual_weight_kg); });
-  const prSet = new Set();
-  thisMonthActuals.forEach(a=>{
-    const prev = prevBest[a.exercise_name]||0;
-    if(a.actual_weight_kg > prev) prSet.add(a.exercise_name);
+  // Build best actual per exercise BEFORE this month
+  const prevBest={};
+  allActuals
+    .filter(a=>a.date<monthStart && a.actual_weight_kg)
+    .forEach(a=>{
+      prevBest[a.exercise_name]=Math.max(prevBest[a.exercise_name]||0, a.actual_weight_kg);
+    });
+  // Best actual this month per exercise
+  const thisBest={};
+  allActuals
+    .filter(a=>a.date>=monthStart && a.actual_weight_kg)
+    .forEach(a=>{
+      thisBest[a.exercise_name]=Math.max(thisBest[a.exercise_name]||0, a.actual_weight_kg);
+    });
+  // Count PRs: exercise has prior history AND this month beats it
+  let prCount=0;
+  Object.entries(thisBest).forEach(([ex,w])=>{
+    if(prevBest[ex]!==undefined && w>prevBest[ex]) prCount++;
   });
 
-  document.getElementById('streakNum').textContent = streak;
-  document.getElementById('totalSessionsNum').textContent = allSessions.filter(s=>s.split!=='Rest').length;
-  document.getElementById('prNum').textContent = prSet.size;
-  if(streak>0){ document.getElementById('heroStreak').classList.add('streak-active'); document.getElementById('streakNum').classList.add('streak-color'); }
-  if(prSet.size>0){ document.getElementById('heroPR').classList.add('pr-active'); document.getElementById('prNum').classList.add('pr-color'); }
-  return { streak, prs: [...prSet] };
+  document.getElementById('streakNum').textContent=streak;
+  document.getElementById('totalNum').textContent=totalSessions;
+  document.getElementById('prNum').textContent=prCount;
+
+  if(streak>0){
+    document.getElementById('heroStreak').classList.add('streak-on');
+    document.getElementById('streakNum').classList.add('c-push');
+  }
+  if(prCount>0){
+    document.getElementById('heroPR').classList.add('pr-on');
+    document.getElementById('prNum').classList.add('c-gold');
+  }
 }
 
-// ── DESTROY CHARTS ───────────────────────────────────────────────
+// ── CHART CLEANUP ─────────────────────────────────────────────────
 function destroyCharts(){
-  Object.values(charts).forEach(c=>{ try{ c.destroy(); }catch(e){} });
-  charts = {};
+  Object.values(charts).forEach(c=>{try{c.destroy();}catch(e){}});
+  charts={};
 }
 
-// ── RENDER TABS ──────────────────────────────────────────────────
+// ── TAB RENDER ────────────────────────────────────────────────────
 function renderTab(tab){
   destroyCharts();
-  const el = document.getElementById('tabContent');
-  if(tab==='daily') el.innerHTML = buildDaily();
-  else if(tab==='weekly') el.innerHTML = buildWeekly();
-  else if(tab==='monthly') el.innerHTML = buildMonthly();
-  else if(tab==='yearly') el.innerHTML = buildYearly();
+  const el=document.getElementById('tabContent');
+  if(tab==='daily') el.innerHTML=buildDaily();
+  else if(tab==='weekly') el.innerHTML=buildWeekly();
+  else if(tab==='monthly') el.innerHTML=buildMonthly();
+  else if(tab==='yearly') el.innerHTML=buildYearly();
 
   if(tab==='weekly') initWeeklyCharts();
   if(tab==='monthly') initMonthlyCharts();
-  if(tab==='yearly') initYearlyHeatmap();
+  if(tab==='yearly'){ initYearHeatmap(); initYearChart(); }
 }
 
 // ─────────────────────────────────────────────────────────────────
-// DAILY TAB
+// DAILY
 // ─────────────────────────────────────────────────────────────────
 function buildDaily(){
-  const today = todayIST();
-  const todaySession = allSessions.find(s=>s.date===today);
-  const todayActuals = allActuals.filter(a=>a.date===today);
+  const today=todayIST();
+  const session=allSessions.find(s=>s.date===today);
+  const actuals=allActuals.filter(a=>a.date===today);
 
-  if(!todaySession){
-    return `<div class="empty-state"><div class="big">No session today yet</div><div>The agent delivers your plan around 1–4 PM IST. Check back after your workout.</div></div>`;
-  }
+  if(!session) return `<div class="empty"><div class="big">No session yet today</div>Agent delivers your plan around 1–4 PM IST.</div>`;
 
-  const split = todaySession.split;
-  const splitClass = split.toLowerCase();
-  const exercises = todaySession.full_plan_json?.exercises || [];
-  const planned = exercises.length;
-  const done = todayActuals.filter(a=>!a.skipped && a.actual_sets).length;
-  const skipped = todayActuals.filter(a=>a.skipped).length;
-  const totalPlannedVol = todaySession.total_volume_kg || 0;
-  const totalActualVol = todayActuals.reduce((s,a)=>{
+  const split=session.split;
+  const st=SPLIT_STYLE[split]||SPLIT_STYLE.Push;
+  const exercises=session.full_plan_json?.exercises||[];
+  const done=actuals.filter(a=>!a.skipped&&a.actual_sets).length;
+  const skipped=actuals.filter(a=>a.skipped).length;
+  const pct=exercises.length>0?Math.round(done/exercises.length*100):0;
+
+  const actualVol=actuals.reduce((s,a)=>{
     if(!a.actual_weight_kg||!a.actual_sets||!a.actual_reps) return s;
-    const reps = parseFloat(String(a.actual_reps).match(/\d+/)?.[0]||0);
-    return s + a.actual_sets * reps * a.actual_weight_kg;
-  }, 0);
+    const r=parseFloat(String(a.actual_reps).match(/\d+/)?.[0]||0);
+    return s+a.actual_sets*r*a.actual_weight_kg;
+  },0);
 
   // Insight
-  const prevSameSplit = allSessions.filter(s=>s.split===split && s.date<today).slice(-1)[0];
-  let insight = `Today is a <b>${split}</b> day. Log your session to start tracking progress.`;
-  if(todayActuals.length>0){
-    if(prevSameSplit && totalActualVol>0){
-      const prevVol = prevSameSplit.total_volume_kg||0;
-      const diff = totalActualVol - prevVol;
-      const pct = prevVol>0 ? Math.round(Math.abs(diff)/prevVol*100) : 0;
-      insight = diff>=0
-        ? `🔥 You lifted <b>${Math.round(totalActualVol).toLocaleString()}kg</b> total — <b>${pct}% more</b> than your last ${split} session. Keep pushing.`
-        : `📉 Volume was <b>${pct}% less</b> than your last ${split} session (${Math.round(totalActualVol).toLocaleString()}kg vs ${Math.round(prevVol).toLocaleString()}kg). Recovery day or push harder next time.`;
+  const prevSame=allSessions.filter(s=>s.split===split&&s.date<today&&s.split!=='Rest').slice(-1)[0];
+  let insight=`Today is a <b>${split}</b> day — ${exercises.length} exercises planned. Log your session after the gym.`;
+  if(actuals.length>0 && actualVol>0){
+    if(prevSame&&prevSame.total_volume_kg>0){
+      const diff=actualVol-(prevSame.total_volume_kg);
+      const pctDiff=Math.round(Math.abs(diff)/prevSame.total_volume_kg*100);
+      insight=diff>=0
+        ?`🔥 <b>${pctDiff}% more volume</b> than your last ${split} session! Total: <b>${Math.round(actualVol).toLocaleString()}kg</b>`
+        :`📉 Volume down <b>${pctDiff}%</b> vs last ${split} session. Total: <b>${Math.round(actualVol).toLocaleString()}kg</b> — recovery day?`;
     } else {
-      insight = `💪 You logged <b>${done}</b> exercise${done!==1?'s':''} today — great start. Volume: <b>${Math.round(totalActualVol).toLocaleString()}kg</b>.`;
+      insight=`💪 Session in progress — <b>${done}</b> exercise${done!==1?'s':''} logged so far.`;
     }
   }
 
-  const completionPct = planned>0 ? Math.round((done/planned)*100) : 0;
-
   return `
-    <div class="insight-card">
-      <div class="insight-icon">💡</div>
-      <p>${insight}</p>
-    </div>
-
-    <div class="card" style="border-left:4px solid var(${SPLIT_COLORS[split]||'--accent'})">
+    <div class="insight-card"><p>${insight}</p></div>
+    <div class="card" style="border-left:4px solid ${st.color}">
       <div class="card-row" style="margin-bottom:10px">
-        <span style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700">${split} Day</span>
-        <span class="card-label">${fmt(today)}</span>
+        <span style="font-family:'Oswald',sans-serif;font-size:20px;font-weight:700;color:${st.color}">${split}</span>
+        <span class="clabel">${fmtFull(today)}</span>
       </div>
-      <div class="card-row" style="margin-bottom:8px">
-        <span class="card-label">Exercises completed</span>
-        <span class="card-value" style="color:var(--good)">${done} / ${planned}</span>
-      </div>
-      ${skipped>0?`<div class="card-row" style="margin-bottom:8px"><span class="card-label">Skipped</span><span class="card-value" style="color:var(--bad)">${skipped}</span></div>`:''}
       <div class="card-row" style="margin-bottom:6px">
-        <span class="card-label">Completion</span>
-        <span class="card-value">${completionPct}%</span>
+        <span class="clabel">Completed</span>
+        <span class="cval" style="color:var(--good)">${done} / ${exercises.length}</span>
       </div>
-      <div class="completion-bar-bg"><div class="completion-bar-fill" style="width:${completionPct}%"></div></div>
-      ${totalActualVol>0?`<div class="card-row" style="margin-top:10px"><span class="card-label">Volume lifted</span><span class="card-value">${Math.round(totalActualVol).toLocaleString()} kg</span></div>`:''}
-      ${totalPlannedVol>0?`<div class="card-row"><span class="card-label">Planned volume</span><span class="card-value" style="color:var(--text-dim)">${Math.round(totalPlannedVol).toLocaleString()} kg</span></div>`:''}
+      ${skipped?`<div class="card-row" style="margin-bottom:6px"><span class="clabel">Skipped</span><span class="cval" style="color:var(--bad)">${skipped}</span></div>`:''}
+      <div class="card-row" style="margin-bottom:4px">
+        <span class="clabel">Completion</span>
+        <span class="cval">${pct}%</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${pct>=80?'var(--good)':pct>=50?'var(--warn)':'var(--bad)'}"></div></div>
+      ${actualVol>0?`<div class="card-row" style="margin-top:10px"><span class="clabel">Volume logged</span><span class="cval">${Math.round(actualVol).toLocaleString()} kg</span></div>`:''}
+      ${session.total_volume_kg?`<div class="card-row"><span class="clabel">Planned volume</span><span class="cval" style="color:var(--text-dim)">${Math.round(session.total_volume_kg).toLocaleString()} kg</span></div>`:''}
     </div>
-
-    ${exercises.slice(0,5).map(ex=>{
-      const actual = todayActuals.find(a=>a.exercise_name===ex.name);
-      const logged = actual && !actual.skipped;
+    ${exercises.map(ex=>{
+      const act=actuals.find(a=>a.exercise_name===ex.name);
       return `<div class="card" style="padding:12px 14px">
         <div class="card-row">
           <div>
             <div style="font-weight:600;font-size:14px;margin-bottom:2px">${ex.name}</div>
             <div style="font-size:12px;color:var(--text-dim)">${ex.muscle||''}</div>
           </div>
-          <div style="text-align:right">
-            ${logged
-              ? `<div style="color:var(--good);font-size:13px;font-weight:600">✅ ${actual.actual_sets}×${actual.actual_reps} @ ${actual.actual_weight_kg}kg</div>`
-              : actual?.skipped
-                ? `<div style="color:var(--bad);font-size:13px">Skipped</div>`
-                : `<div style="color:var(--text-dim);font-size:13px">${ex.sets}×${ex.reps} @ ${ex.weight_kg}kg</div>`
-            }
+          <div style="text-align:right;font-size:13px">
+            ${act&&!act.skipped&&act.actual_sets
+              ?`<span style="color:var(--good);font-weight:600">✅ ${act.actual_sets}×${act.actual_reps} @ ${act.actual_weight_kg}kg</span>`
+              :act?.skipped
+              ?`<span style="color:var(--bad)">Skipped</span>`
+              :`<span style="color:var(--text-dim)">${ex.sets}×${ex.reps} @ ${ex.weight_kg}kg</span>`}
           </div>
         </div>
       </div>`;
-    }).join('')}
-    ${exercises.length>5?`<div style="text-align:center;color:var(--text-dim);font-size:13px;padding:8px">+${exercises.length-5} more exercises</div>`:''}
-  `;
+    }).join('')}`;
 }
 
 // ─────────────────────────────────────────────────────────────────
-// WEEKLY TAB
+// WEEKLY
 // ─────────────────────────────────────────────────────────────────
-function buildWeekly(){
-  const today = todayIST();
-  const wStart = weekStart(today);
-  const days = Array.from({length:7},(_,i)=>addDays(wStart,i));
-  const DAY_NAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+function buildWeeklyDropdown(){
+  const today=todayIST();
+  let options='';
+  for(let w=0;w<8;w++){
+    const wStart=mondayOfWeek(addDays(today,-w*7));
+    const wEnd=addDays(wStart,6);
+    const label=w===0?'This week ('+fmtShort(wStart)+'–'+fmtShort(wEnd)+')'
+                     :fmtShort(wStart)+' – '+fmtShort(wEnd);
+    options+=`<option value="${wStart}" ${wStart===activeWeekStart?'selected':''}>${label}</option>`;
+  }
+  return `<select class="week-select" id="weekSelect" onchange="onWeekChange(this.value)">${options}</select>`;
+}
 
-  // Heatmap
-  const heatmapCells = days.map((d,i)=>{
-    const s = allSessions.find(sess=>sess.date===d);
-    const split = s?.split;
-    const splitClass = split ? split.toLowerCase() : (d>today?'empty':'empty');
-    const isToday = d===today;
-    return `<div class="day-cell ${splitClass}" style="${isToday?'outline:2px solid var(--accent);outline-offset:2px':''}">
-      <div class="day-name" style="${isToday?'color:var(--accent)':''}">${DAY_NAMES[i]}</div>
-      <div class="day-split ${splitClass}">${split&&split!=='Rest'?split.slice(0,3).toUpperCase():split==='Rest'?'REST':''}</div>
+function buildWeekly(){
+  const today=todayIST();
+  const wStart=activeWeekStart;
+  const days=Array.from({length:7},(_,i)=>addDays(wStart,i));
+  const DAY_LABELS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  // Build heatmap using SCHEDULE for colours, sessions for volume
+  const heatmap=days.map((d,i)=>{
+    const scheduled=scheduledSplit(d);
+    const st=SPLIT_STYLE[scheduled]||SPLIT_STYLE.Rest;
+    const session=allSessions.find(s=>s.date===d);
+    const isFuture=d>today;
+    const isToday=d===today;
+    const trained=!!session && session.split!=='Rest' && !isFuture;
+    const isMissed=!isFuture&&!isToday&&!trained&&scheduled!=='Rest';
+    const vol=session?.total_volume_kg||0;
+
+    let cellClass='day-cell';
+    let style=`background:${isFuture?'var(--panel-2)':scheduled==='Rest'?'rgba(74,85,104,0.08)':trained?st.bg:isMissed?'rgba(255,107,107,0.06)':'var(--panel-2)'};border-color:${trained?st.border:isMissed?'rgba(255,107,107,0.2)':'transparent'}`;
+    if(isToday) cellClass+=' today-cell';
+
+    return `<div class="${cellClass}" style="${style}">
+      <div class="day-name ${isToday?'today-name':''}">${DAY_LABELS[i]}</div>
+      <div class="dot" style="background:${scheduled==='Rest'?'var(--rest)':isFuture?'var(--panel)':trained?st.color:isMissed?'var(--bad)':'var(--panel)'}"></div>
+      <div class="day-split-label" style="color:${st.color};margin-top:4px">${scheduled==='Rest'?'REST':scheduled.slice(0,3).toUpperCase()}</div>
+      ${vol>0?`<div class="day-vol">${Math.round(vol/1000*10)/10}t</div>`:''}
     </div>`;
   }).join('');
 
-  // This week vs last week volume per split
-  const lStart = addDays(wStart,-7);
-  const lEnd   = addDays(wStart,-1);
-  const splits = ['Push','Pull','Legs','Shoulders'];
-  const thisWeekVol = {}, lastWeekVol = {};
-  splits.forEach(sp=>{
-    thisWeekVol[sp] = allSessions.filter(s=>s.date>=wStart&&s.date<=today&&s.split===sp).reduce((a,s)=>a+(s.total_volume_kg||0),0);
-    lastWeekVol[sp] = allSessions.filter(s=>s.date>=lStart&&s.date<=lEnd&&s.split===sp).reduce((a,s)=>a+(s.total_volume_kg||0),0);
-  });
+  // Stats for this week
+  const weekSessions=allSessions.filter(s=>s.date>=wStart&&s.date<=addDays(wStart,6)&&s.split!=='Rest'&&s.date<=today);
+  const plannedTraining=days.filter(d=>scheduledSplit(d)!=='Rest'&&d<=today).length;
+  const completedCount=new Set(weekSessions.map(s=>s.date)).size;
+  const pct=plannedTraining>0?Math.round(completedCount/plannedTraining*100):0;
+  const totalVol=weekSessions.reduce((a,s)=>a+(s.total_volume_kg||0),0);
 
-  // Completion
-  const trainingDays = days.filter(d=>d<=today);
-  const completedSessions = trainingDays.filter(d=>allSessions.find(s=>s.date===d&&s.split!=='Rest')).length;
-  const plannedSessions = trainingDays.filter(d=>{
-    const dayOfWeek = new Date(d+'T00:00:00').getDay();
-    return dayOfWeek !== 0; // Sunday is rest
-  }).length;
-  const pct = plannedSessions>0 ? Math.round(completedSessions/plannedSessions*100) : 0;
-
-  // Total this week
-  const totalThisWeek = allSessions.filter(s=>s.date>=wStart&&s.date<=today&&s.split!=='Rest').reduce((a,s)=>a+(s.total_volume_kg||0),0);
+  // Volume vs previous week per split
+  const prevWStart=addDays(wStart,-7);
+  const prevWEnd=addDays(wStart,-1);
+  const splits=['Push','Pull','Legs','Shoulders'];
 
   return `
-    <p class="section-title">This Week</p>
-    <div class="week-heatmap">${heatmapCells}</div>
-
-    <div class="stat-grid" style="margin-bottom:14px">
+    ${buildWeeklyDropdown()}
+    <div class="week-heatmap">${heatmap}</div>
+    <div class="stat-grid" style="margin-bottom:12px">
       <div class="stat-card">
-        <div class="val">${completedSessions}<span style="font-size:14px;color:var(--text-dim)"> / ${plannedSessions}</span></div>
+        <div class="val">${completedCount}<span style="font-size:14px;color:var(--text-dim)"> / ${plannedTraining}</span></div>
         <div class="lbl">Sessions done</div>
       </div>
       <div class="stat-card">
-        <div class="val">${Math.round(totalThisWeek/1000*10)/10}<span style="font-size:14px;color:var(--text-dim)">t</span></div>
+        <div class="val">${totalVol>0?(Math.round(totalVol/1000*10)/10)+'<span style="font-size:14px;color:var(--text-dim)">t</span>':'—'}</div>
         <div class="lbl">Volume lifted</div>
       </div>
     </div>
-
     <div class="card">
       <div class="card-row" style="margin-bottom:6px">
-        <span class="card-label">Weekly completion</span>
-        <span class="card-value" style="color:${pct>=80?'var(--good)':pct>=50?'var(--warn)':'var(--bad)'}">${pct}%</span>
+        <span class="clabel">Completion rate</span>
+        <span class="cval" style="color:${pct>=80?'var(--good)':pct>=50?'var(--warn)':'var(--bad)'}">${pct}%</span>
       </div>
-      <div class="completion-bar-bg"><div class="completion-bar-fill" style="width:${pct}%;background:${pct>=80?'var(--good)':pct>=50?'var(--warn)':'var(--bad)'}"></div></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${pct>=80?'var(--good)':pct>=50?'var(--warn)':'var(--bad)'}"></div></div>
     </div>
-
-    <p class="section-title">Volume — This Week vs Last Week</p>
-    <div class="card"><div class="chart-wrap"><canvas id="weekVolumeChart"></canvas></div></div>
-  `;
+    <p class="stitle">Volume per Split — This Week vs Previous</p>
+    <div class="card"><div class="chart-wrap"><canvas id="weekChart"></canvas></div></div>`;
 }
 
-function initWeeklyCharts(){
-  const today = todayIST();
-  const wStart = weekStart(today);
-  const lStart = addDays(wStart,-7);
-  const lEnd   = addDays(wStart,-1);
-  const splits = ['Push','Pull','Legs','Shoulders'];
-  const colors = [
-    'rgba(255,140,90,0.8)','rgba(90,169,230,0.8)',
-    'rgba(110,222,138,0.8)','rgba(199,146,234,0.8)'
-  ];
-  const thisW = splits.map(sp=>allSessions.filter(s=>s.date>=wStart&&s.date<=today&&s.split===sp).reduce((a,s)=>a+(s.total_volume_kg||0),0));
-  const lastW = splits.map(sp=>allSessions.filter(s=>s.date>=lStart&&s.date<=lEnd&&s.split===sp).reduce((a,s)=>a+(s.total_volume_kg||0),0));
+window.onWeekChange=function(val){
+  activeWeekStart=val;
+  destroyCharts();
+  document.getElementById('tabContent').innerHTML=buildWeekly();
+  initWeeklyCharts();
+};
 
-  const ctx = document.getElementById('weekVolumeChart');
+function initWeeklyCharts(){
+  const wStart=activeWeekStart;
+  const prevWStart=addDays(wStart,-7);
+  const prevWEnd=addDays(wStart,-1);
+  const wEnd=addDays(wStart,6);
+  const splits=['Push','Pull','Legs','Shoulders'];
+  const colors=['rgba(255,140,90,0.8)','rgba(90,169,230,0.8)','rgba(110,222,138,0.8)','rgba(199,146,234,0.8)'];
+
+  const thisVol=splits.map(sp=>allSessions.filter(s=>s.date>=wStart&&s.date<=wEnd&&s.split===sp).reduce((a,s)=>a+(s.total_volume_kg||0),0));
+  const prevVol=splits.map(sp=>allSessions.filter(s=>s.date>=prevWStart&&s.date<=prevWEnd&&s.split===sp).reduce((a,s)=>a+(s.total_volume_kg||0),0));
+
+  const ctx=document.getElementById('weekChart');
   if(!ctx) return;
-  charts.weekVol = new Chart(ctx,{
+  charts.week=new Chart(ctx,{
     type:'bar',
     data:{
-      labels: splits,
+      labels:splits,
       datasets:[
-        { label:'This week', data:thisW, backgroundColor:colors, borderRadius:6 },
-        { label:'Last week', data:lastW, backgroundColor:colors.map(c=>c.replace('0.8','0.3')), borderRadius:6 }
+        {label:'This week',data:thisVol,backgroundColor:colors,borderRadius:6},
+        {label:'Previous week',data:prevVol,backgroundColor:colors.map(c=>c.replace('0.8','0.28')),borderRadius:6}
       ]
     },
     options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ color:'#9AA3B2', font:{size:11} } } },
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:'#9AA3B2',font:{size:11}}}},
       scales:{
-        x:{ ticks:{color:'#9AA3B2'}, grid:{color:'rgba(50,56,68,0.5)'} },
-        y:{ ticks:{color:'#9AA3B2'}, grid:{color:'rgba(50,56,68,0.5)'}, beginAtZero:true }
+        x:{ticks:{color:'#9AA3B2'},grid:{color:'rgba(50,56,68,0.4)'}},
+        y:{ticks:{color:'#9AA3B2'},grid:{color:'rgba(50,56,68,0.4)'},beginAtZero:true}
       }
     }
   });
 }
 
 // ─────────────────────────────────────────────────────────────────
-// MONTHLY TAB
+// MONTHLY
 // ─────────────────────────────────────────────────────────────────
 function buildMonthly(){
-  const today = todayIST();
-  const monthStart = today.slice(0,7)+'-01';
-  const monthlySessions = allSessions.filter(s=>s.date>=monthStart&&s.date<=today&&s.split!=='Rest');
+  const today=todayIST();
+  const monthStart=today.slice(0,7)+'-01';
+  const monthlySessions=allSessions.filter(s=>s.date>=monthStart&&s.date<=today&&s.split!=='Rest');
+  const totalVol=monthlySessions.reduce((a,s)=>a+(s.total_volume_kg||0),0);
+  const best=monthlySessions.reduce((b,s)=>(s.total_volume_kg||0)>(b?.total_volume_kg||0)?s:b,null);
 
-  // Exercise list for dropdown — from session plans
-  const exNames = new Set();
-  allSessions.forEach(s=>{
-    (s.full_plan_json?.exercises||[]).forEach(e=>exNames.add(e.name));
-  });
-  const exOptions = [...exNames].map(n=>`<option value="${n}">${n}</option>`).join('');
-
-  // Weekly volume within month
-  const weeks = [];
-  let wCursor = new Date(monthStart+'T00:00:00');
-  while(wCursor.toISOString().slice(0,10) <= today){
-    const wStart = wCursor.toISOString().slice(0,10);
-    const wEnd   = addDays(wStart,6);
-    const vol = monthlySessions.filter(s=>s.date>=wStart&&s.date<=wEnd).reduce((a,s)=>a+(s.total_volume_kg||0),0);
-    weeks.push({ label:`W${weeks.length+1}`, vol });
-    wCursor.setDate(wCursor.getDate()+7);
-  }
-
-  // Best session
-  const best = monthlySessions.reduce((b,s)=> (s.total_volume_kg||0)>(b?.total_volume_kg||0)?s:b, null);
-  const totalMonthVol = monthlySessions.reduce((a,s)=>a+(s.total_volume_kg||0),0);
+  // Exercise names from session plans (all time)
+  const exNames=new Set();
+  allSessions.forEach(s=>(s.full_plan_json?.exercises||[]).forEach(e=>exNames.add(e.name)));
+  const exOpts=[...exNames].sort().map(n=>`<option value="${n}">${n}</option>`).join('');
 
   return `
-    <div class="stat-grid" style="margin-bottom:16px">
+    <div class="stat-grid" style="margin-bottom:14px">
       <div class="stat-card">
-        <div class="val">${monthlySessions.length}</div>
+        <div class="val">${new Set(monthlySessions.map(s=>s.date)).size}</div>
         <div class="lbl">Sessions this month</div>
       </div>
       <div class="stat-card">
-        <div class="val">${Math.round(totalMonthVol/1000*10)/10}<span style="font-size:14px;color:var(--text-dim)">t</span></div>
+        <div class="val">${totalVol>0?(Math.round(totalVol/1000*10)/10)+'<span style="font-size:14px;color:var(--text-dim)">t</span>':'—'}</div>
         <div class="lbl">Total volume</div>
       </div>
     </div>
-
     ${best?`<div class="card" style="border-left:4px solid var(--gold)">
-      <div class="card-label" style="margin-bottom:6px">🏆 Best session this month</div>
-      <div style="font-weight:600;font-size:15px">${best.split} — ${fmt(best.date)}</div>
-      <div style="color:var(--text-dim);font-size:13px;margin-top:4px">${Math.round(best.total_volume_kg||0).toLocaleString()} kg total volume</div>
+      <div class="clabel" style="margin-bottom:6px">🏆 Best session this month</div>
+      <div style="font-weight:600;font-size:15px">${best.split} — ${fmtShort(best.date)}</div>
+      <div style="color:var(--text-dim);font-size:13px;margin-top:3px">${Math.round(best.total_volume_kg||0).toLocaleString()} kg</div>
     </div>`:''}
-
-    <p class="section-title">Strength Progression</p>
+    <p class="stitle">Strength Progression</p>
     <select class="ex-select" id="exSelect" onchange="updateStrengthChart()">
-      <option value="">— Select exercise —</option>
-      ${exOptions}
+      <option value="">— Select exercise —</option>${exOpts}
     </select>
-    <div class="card"><div class="chart-wrap-tall"><canvas id="strengthChart"></canvas></div></div>
-
-    <p class="section-title">Weekly Volume Trend</p>
-    <div class="card"><div class="chart-wrap"><canvas id="monthVolChart"></canvas></div></div>
-  `;
+    <div class="card"><div class="chart-tall"><canvas id="strengthChart"></canvas></div></div>
+    <p class="stitle">Weekly Volume Trend</p>
+    <div class="card"><div class="chart-wrap"><canvas id="monthChart"></canvas></div></div>`;
 }
 
 function initMonthlyCharts(){
-  // Monthly volume bars
-  const today = todayIST();
-  const monthStart = today.slice(0,7)+'-01';
-  let wCursor = new Date(monthStart+'T00:00:00');
-  const weekLabels = [], weekVols = [];
-  let wIdx = 1;
-  while(wCursor.toISOString().slice(0,10) <= today){
-    const wStart = wCursor.toISOString().slice(0,10);
-    const wEnd   = addDays(wStart,6);
-    const vol = allSessions.filter(s=>s.date>=wStart&&s.date<=wEnd&&s.split!=='Rest').reduce((a,s)=>a+(s.total_volume_kg||0),0);
-    weekLabels.push(`Week ${wIdx++}`);
-    weekVols.push(Math.round(vol));
-    wCursor.setDate(wCursor.getDate()+7);
+  const today=todayIST();
+  const monthStart=today.slice(0,7)+'-01';
+  let cur=new Date(monthStart+'T12:00:00');
+  const wLabels=[],wVols=[];
+  let wi=1;
+  while(cur.toISOString().slice(0,10)<=today){
+    const ws=cur.toISOString().slice(0,10);
+    const we=addDays(ws,6);
+    const v=allSessions.filter(s=>s.date>=ws&&s.date<=we&&s.split!=='Rest').reduce((a,s)=>a+(s.total_volume_kg||0),0);
+    wLabels.push('Wk '+wi++);
+    wVols.push(Math.round(v));
+    cur.setDate(cur.getDate()+7);
   }
-  const ctx = document.getElementById('monthVolChart');
+  const ctx=document.getElementById('monthChart');
   if(!ctx) return;
-  charts.monthVol = new Chart(ctx,{
+  charts.month=new Chart(ctx,{
     type:'bar',
-    data:{
-      labels:weekLabels,
-      datasets:[{ label:'Volume (kg)', data:weekVols, backgroundColor:'rgba(255,140,90,0.7)', borderRadius:8 }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ display:false } },
-      scales:{
-        x:{ ticks:{color:'#9AA3B2'}, grid:{color:'rgba(50,56,68,0.5)'} },
-        y:{ ticks:{color:'#9AA3B2'}, grid:{color:'rgba(50,56,68,0.5)'}, beginAtZero:true }
-      }
-    }
+    data:{labels:wLabels,datasets:[{label:'Volume (kg)',data:wVols,backgroundColor:'rgba(255,140,90,0.75)',borderRadius:8}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#9AA3B2'},grid:{color:'rgba(50,56,68,0.4)'}},y:{ticks:{color:'#9AA3B2'},grid:{color:'rgba(50,56,68,0.4)'},beginAtZero:true}}}
   });
 }
 
-window.updateStrengthChart = function(){
-  const exName = document.getElementById('exSelect')?.value;
-  if(!exName) return;
-  if(charts.strength){ charts.strength.destroy(); }
+window.updateStrengthChart=function(){
+  const ex=document.getElementById('exSelect')?.value;
+  if(!ex) return;
+  if(charts.strength){charts.strength.destroy();delete charts.strength;}
 
-  // Collect data points — actual first, planned as fallback
-  const points = [];
+  // Collect all sessions that include this exercise
+  const pts=[];
   allSessions.forEach(s=>{
-    const planEx = (s.full_plan_json?.exercises||[]).find(e=>e.name===exName);
+    const planEx=(s.full_plan_json?.exercises||[]).find(e=>e.name===ex);
     if(!planEx) return;
-    const actual = allActuals.find(a=>a.date===s.date&&a.exercise_name===exName&&a.actual_weight_kg);
-    const weight = actual ? actual.actual_weight_kg : planEx.weight_kg;
-    const isActual = !!actual;
-    points.push({ date:s.date, weight, isActual });
+    const actual=allActuals.find(a=>a.date===s.date&&a.exercise_name===ex&&a.actual_weight_kg);
+    pts.push({date:s.date,weight:actual?actual.actual_weight_kg:planEx.weight_kg,isActual:!!actual});
   });
-  points.sort((a,b)=>a.date.localeCompare(b.date));
+  pts.sort((a,b)=>a.date.localeCompare(b.date));
+  if(pts.length===0) return;
 
-  if(points.length===0){
-    const ctx = document.getElementById('strengthChart');
-    if(ctx){ const c=ctx.getContext('2d'); c.clearRect(0,0,ctx.width,ctx.height); }
-    return;
-  }
+  // Mark PRs
+  let maxW=0;
+  const prPts=pts.map(p=>{ const isPR=p.isActual&&p.weight>maxW; if(p.isActual) maxW=Math.max(maxW,p.weight); return isPR?p.weight:null; });
 
-  // PRs — mark new highest points
-  let maxSoFar = 0;
-  const prPoints = points.map((p,i)=>{
-    const isPR = p.weight > maxSoFar;
-    if(isPR) maxSoFar = p.weight;
-    return isPR ? p.weight : null;
-  });
-
-  const ctx = document.getElementById('strengthChart');
+  const ctx=document.getElementById('strengthChart');
   if(!ctx) return;
-  charts.strength = new Chart(ctx,{
+  charts.strength=new Chart(ctx,{
     type:'line',
     data:{
-      labels: points.map(p=>fmt(p.date)),
+      labels:pts.map(p=>fmtShort(p.date)),
       datasets:[
-        {
-          label:'Weight (kg)',
-          data: points.map(p=>p.weight),
-          borderColor:'rgba(255,140,90,0.9)',
-          backgroundColor:'rgba(255,140,90,0.08)',
-          tension:0.3, fill:true, pointRadius:4,
-          pointBackgroundColor: points.map(p=>p.isActual?'var(--push)':'rgba(255,140,90,0.4)'),
-          pointBorderColor: points.map(p=>p.isActual?'white':'rgba(255,140,90,0.4)'),
-          pointBorderWidth:1,
-        },
-        {
-          label:'PR 🏆',
-          data: prPoints,
-          borderColor:'transparent', backgroundColor:'transparent',
-          pointRadius: prPoints.map(p=>p!==null?8:0),
-          pointBackgroundColor:'var(--gold)',
-          pointBorderColor:'white', pointBorderWidth:2,
-          showLine:false,
-        }
+        {label:'Weight (kg)',data:pts.map(p=>p.weight),borderColor:'rgba(255,140,90,0.9)',backgroundColor:'rgba(255,140,90,0.07)',tension:0.35,fill:true,pointRadius:4,pointBackgroundColor:pts.map(p=>p.isActual?'var(--push)':'rgba(255,140,90,0.3)'),pointBorderColor:pts.map(p=>p.isActual?'white':'transparent'),pointBorderWidth:1.5},
+        {label:'PR 🏆',data:prPts,borderColor:'transparent',backgroundColor:'transparent',pointRadius:prPts.map(p=>p!==null?8:0),pointBackgroundColor:'var(--gold)',pointBorderColor:'white',pointBorderWidth:2,showLine:false}
       ]
     },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ labels:{ color:'#9AA3B2', font:{size:11} } } },
-      scales:{
-        x:{ ticks:{color:'#9AA3B2',maxRotation:45}, grid:{color:'rgba(50,56,68,0.5)'} },
-        y:{ ticks:{color:'#9AA3B2'}, grid:{color:'rgba(50,56,68,0.5)'} }
-      }
-    }
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#9AA3B2',font:{size:11}}}},scales:{x:{ticks:{color:'#9AA3B2',maxRotation:45},grid:{color:'rgba(50,56,68,0.4)'}},y:{ticks:{color:'#9AA3B2'},grid:{color:'rgba(50,56,68,0.4)'}}}}
   });
 };
 
 // ─────────────────────────────────────────────────────────────────
-// YEARLY TAB
+// YEARLY
 // ─────────────────────────────────────────────────────────────────
 function buildYearly(){
-  const today = todayIST();
-  const yearStart = today.slice(0,4)+'-01-01';
-  const yearSessions = allSessions.filter(s=>s.date>=yearStart&&s.date<=today&&s.split!=='Rest');
-  const totalYearVol = yearSessions.reduce((a,s)=>a+(s.total_volume_kg||0),0);
-
-  // Max volume for intensity scaling
-  const volByDate = {};
-  yearSessions.forEach(s=>{ volByDate[s.date]=(volByDate[s.date]||0)+(s.total_volume_kg||0); });
-  const maxVol = Math.max(...Object.values(volByDate), 1);
+  const today=todayIST();
+  const yearStart=today.slice(0,4)+'-01-01';
+  const ySessions=allSessions.filter(s=>s.date>=yearStart&&s.date<=today&&s.split!=='Rest');
+  const totalVol=ySessions.reduce((a,s)=>a+(s.total_volume_kg||0),0);
+  const uniqueDays=new Set(ySessions.map(s=>s.date)).size;
 
   return `
-    <div class="stat-grid" style="margin-bottom:16px">
-      <div class="stat-card">
-        <div class="val">${yearSessions.length}</div>
-        <div class="lbl">Sessions this year</div>
-      </div>
-      <div class="stat-card">
-        <div class="val">${Math.round(totalYearVol/1000)}<span style="font-size:14px;color:var(--text-dim)">t</span></div>
-        <div class="lbl">Total volume</div>
-      </div>
+    <div class="stat-grid" style="margin-bottom:14px">
+      <div class="stat-card"><div class="val">${uniqueDays}</div><div class="lbl">Training days</div></div>
+      <div class="stat-card"><div class="val">${Math.round(totalVol/1000)}<span style="font-size:14px;color:var(--text-dim)">t</span></div><div class="lbl">Total volume</div></div>
     </div>
-
-    <p class="section-title">Training Consistency</p>
+    <p class="stitle">Training Heatmap — ${today.slice(0,4)}</p>
     <div class="card">
-      <div id="yearHeatmap" style="overflow-x:auto;padding-bottom:4px"></div>
-      <div style="display:flex;align-items:center;gap:6px;margin-top:10px;flex-wrap:wrap">
+      <div class="year-wrap" id="yearHeatmap"></div>
+      <div class="year-legend">
         <span style="font-size:11px;color:var(--text-dim)">Less</span>
-        <div style="width:11px;height:11px;border-radius:2px;background:var(--panel-2)"></div>
-        <div style="width:11px;height:11px;border-radius:2px;background:rgba(255,140,90,0.25)"></div>
-        <div style="width:11px;height:11px;border-radius:2px;background:rgba(255,140,90,0.5)"></div>
-        <div style="width:11px;height:11px;border-radius:2px;background:rgba(255,140,90,0.75)"></div>
-        <div style="width:11px;height:11px;border-radius:2px;background:var(--push)"></div>
+        <div class="legend-cell" style="background:var(--panel-2)"></div>
+        <div class="legend-cell" style="background:rgba(255,140,90,0.25)"></div>
+        <div class="legend-cell" style="background:rgba(255,140,90,0.5)"></div>
+        <div class="legend-cell" style="background:rgba(255,140,90,0.75)"></div>
+        <div class="legend-cell" style="background:var(--push)"></div>
         <span style="font-size:11px;color:var(--text-dim)">More</span>
       </div>
     </div>
-
-    <p class="section-title">Volume by Split</p>
-    <div class="card"><div class="chart-wrap-tall"><canvas id="yearSplitChart"></canvas></div></div>
-  `;
+    <p class="stitle">Split Distribution</p>
+    <div class="card"><div class="chart-tall"><canvas id="yearChart"></canvas></div></div>`;
 }
 
-function initYearlyHeatmap(){
-  const today = todayIST();
-  const yearStart = today.slice(0,4)+'-01-01';
+function initYearHeatmap(){
+  const today=todayIST();
+  const yearStart=today.slice(0,4)+'-01-01';
+  const volByDate={};
+  allSessions.filter(s=>s.split!=='Rest').forEach(s=>{ volByDate[s.date]=(volByDate[s.date]||0)+(s.total_volume_kg||0); });
+  const maxV=Math.max(...Object.values(volByDate),1);
 
-  const volByDate = {};
-  allSessions.filter(s=>s.split!=='Rest').forEach(s=>{
-    volByDate[s.date]=(volByDate[s.date]||0)+(s.total_volume_kg||0);
-  });
-  const maxVol = Math.max(...Object.values(volByDate),1);
+  const start=new Date(mondayOfWeek(yearStart)+'T12:00:00');
+  const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-  // Build 52-week grid starting from yearStart's Monday
-  const startDate = new Date(yearStart+'T00:00:00');
-  const dayOfWeek = startDate.getDay();
-  const offset = dayOfWeek===0?-6:1-dayOfWeek;
-  startDate.setDate(startDate.getDate()+offset);
+  let grid='<div style="display:flex;gap:3px;align-items:flex-start">';
+  // Row labels
+  grid+='<div style="display:flex;flex-direction:column;gap:3px;margin-right:3px;padding-top:18px">';
+  ['M','','W','','F','','S'].forEach(l=>{ grid+=`<div style="width:11px;height:11px;font-size:8px;color:var(--text-dim);line-height:11px">${l}</div>`; });
+  grid+='</div>';
 
-  const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  let html = '<div style="display:flex;gap:3px;align-items:flex-start">';
-  // Day labels
-  html += '<div style="display:flex;flex-direction:column;gap:3px;margin-right:4px;padding-top:16px">';
-  ['M','','W','','F','','S'].forEach(d=>{
-    html += `<div style="width:11px;height:11px;font-size:8px;color:var(--text-dim);line-height:11px">${d}</div>`;
-  });
-  html += '</div>';
+  let monthRow='<div style="display:flex;gap:3px;margin-left:17px;margin-bottom:3px">';
+  let prevM=-1;
+  for(let w=0;w<53;w++){
+    const colStart=new Date(start);
+    colStart.setDate(colStart.getDate()+w*7);
+    const colM=colStart.getMonth();
+    monthRow+=`<div style="width:11px;font-size:8px;color:var(--text-dim);flex-shrink:0">${colM!==prevM?MONTHS[colM]:''}</div>`;
+    prevM=colM;
 
-  // Columns
-  let monthLabels = '';
-  let prevMonth = -1;
-  for(let w=0; w<53; w++){
-    const colDate = new Date(startDate);
-    colDate.setDate(colDate.getDate()+w*7);
-    const colMonth = colDate.getMonth();
-    monthLabels += `<div style="width:11px;font-size:8px;color:var(--text-dim);flex-shrink:0">${colMonth!==prevMonth?MONTHS[colMonth]:''}</div>`;
-    prevMonth = colMonth;
-
-    html += '<div style="display:flex;flex-direction:column;gap:3px">';
-    for(let d=0; d<7; d++){
-      const cellDate = new Date(colDate);
-      cellDate.setDate(cellDate.getDate()+d);
-      const dateStr = cellDate.toISOString().slice(0,10);
-      const vol = volByDate[dateStr]||0;
-      const inYear = dateStr>=today.slice(0,4)+'-01-01' && dateStr<=today;
-      let lvl = 0;
-      if(inYear && vol>0){
-        const ratio = vol/maxVol;
-        lvl = ratio<0.25?1:ratio<0.5?2:ratio<0.75?3:4;
-      }
-      const title = inYear&&vol>0?`${dateStr}: ${Math.round(vol)}kg`:'';
-      html += `<div class="year-cell${lvl>0?' l'+lvl:''}" title="${title}" style="${dateStr===today?'outline:1px solid var(--accent)':''}"></div>`;
+    grid+='<div style="display:flex;flex-direction:column;gap:3px">';
+    for(let d=0;d<7;d++){
+      const cellD=new Date(colStart);
+      cellD.setDate(cellD.getDate()+d);
+      const ds=cellD.toISOString().slice(0,10);
+      const inRange=ds>=yearStart&&ds<=today;
+      const v=volByDate[ds]||0;
+      let lvl=0;
+      if(inRange&&v>0){ const r=v/maxV; lvl=r<0.25?1:r<0.5?2:r<0.75?3:4; }
+      const bg=lvl===0?'var(--panel-2)':lvl===1?'rgba(255,140,90,0.25)':lvl===2?'rgba(255,140,90,0.5)':lvl===3?'rgba(255,140,90,0.75)':'var(--push)';
+      const outline=ds===today?'outline:1px solid var(--accent);':'';
+      grid+=`<div style="width:11px;height:11px;border-radius:2px;background:${bg};flex-shrink:0;${outline}" title="${inRange&&v>0?ds+': '+Math.round(v)+'kg':''}"></div>`;
     }
-    html += '</div>';
+    grid+='</div>';
   }
-  html += '</div>';
+  grid+='</div>';
 
-  // Month labels row
-  const monthRow = `<div style="display:flex;gap:3px;margin-left:19px;margin-bottom:4px">${monthLabels}</div>`;
-  document.getElementById('yearHeatmap').innerHTML = monthRow + html;
+  document.getElementById('yearHeatmap').innerHTML=monthRow+grid;
+}
 
-  // Split pie chart
-  const splits = ['Push','Pull','Legs','Shoulders'];
-  const splitCounts = splits.map(sp=>allSessions.filter(s=>s.split===sp&&s.date>=today.slice(0,4)+'-01-01').length);
-  const ctx = document.getElementById('yearSplitChart');
+function initYearChart(){
+  const today=todayIST();
+  const yearStart=today.slice(0,4)+'-01-01';
+  const splits=['Push','Pull','Legs','Shoulders'];
+  const counts=splits.map(sp=>new Set(allSessions.filter(s=>s.split===sp&&s.date>=yearStart&&s.date<=today).map(s=>s.date)).size);
+  const ctx=document.getElementById('yearChart');
   if(!ctx) return;
-  charts.yearSplit = new Chart(ctx,{
+  charts.year=new Chart(ctx,{
     type:'doughnut',
-    data:{
-      labels:splits,
-      datasets:[{
-        data:splitCounts,
-        backgroundColor:['rgba(255,140,90,0.8)','rgba(90,169,230,0.8)','rgba(110,222,138,0.8)','rgba(199,146,234,0.8)'],
-        borderColor:'#1D2229', borderWidth:3
-      }]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{ position:'bottom', labels:{ color:'#9AA3B2', padding:16, font:{size:12} } } }
-    }
+    data:{labels:splits,datasets:[{data:counts,backgroundColor:['rgba(255,140,90,0.85)','rgba(90,169,230,0.85)','rgba(110,222,138,0.85)','rgba(199,146,234,0.85)'],borderColor:'#1D2229',borderWidth:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#9AA3B2',padding:14,font:{size:12}}}}}
   });
 }
 
-// ── TAB SWITCHING ────────────────────────────────────────────────
+// ── TAB SWITCHING ─────────────────────────────────────────────────
 document.querySelectorAll('.tab').forEach(btn=>{
   btn.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    activeTab = btn.dataset.tab;
+    activeTab=btn.dataset.tab;
     renderTab(activeTab);
   });
 });
 
-// ── INIT ─────────────────────────────────────────────────────────
-(async ()=>{
+// ── BOOT ──────────────────────────────────────────────────────────
+(async()=>{
   await loadData();
   computeHero();
   renderTab(activeTab);
