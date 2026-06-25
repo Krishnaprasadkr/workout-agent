@@ -254,6 +254,47 @@
     margin-bottom:14px;
   }
 
+  /* ── Skip day UI ──────────────────────────────────────── */
+  .skip-day-btn{
+    font-size:12px; font-weight:600; font-family:'Inter',sans-serif;
+    color:var(--text-dim); background:none;
+    border:1px solid var(--line); border-radius:8px;
+    padding:6px 10px; cursor:pointer; white-space:nowrap;
+    transition:all 0.15s; flex-shrink:0;
+  }
+  .skip-day-btn:hover{ border-color:var(--bad); color:var(--bad); }
+  .skip-day-btn.active{ border-color:var(--bad); color:var(--bad); background:rgba(255,107,107,0.08); }
+
+  .skip-panel{
+    display:none; margin-top:10px;
+    background:rgba(255,107,107,0.06); border:1px solid rgba(255,107,107,0.2);
+    border-radius:10px; padding:12px 14px;
+  }
+  .skip-panel.open{ display:block; }
+  .skip-panel-label{ font-size:12px; color:var(--text-dim); margin-bottom:8px; }
+  .skip-reasons{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .reason-pill{
+    font-size:12px; font-weight:600; padding:5px 12px; border-radius:999px;
+    border:1px solid var(--line); background:var(--panel-2); color:var(--text-dim);
+    cursor:pointer; transition:all 0.15s;
+  }
+  .reason-pill.selected{ background:rgba(255,107,107,0.18); border-color:var(--bad); color:var(--bad); }
+  .skip-confirm-btn{
+    width:100%; font-family:'Oswald',sans-serif; font-size:15px; font-weight:600;
+    text-transform:uppercase; letter-spacing:0.06em;
+    background:var(--bad); color:white; border:none; border-radius:8px;
+    padding:11px; cursor:pointer; transition:opacity 0.15s;
+  }
+  .skip-confirm-btn:active{ opacity:0.8; }
+
+  .skipped-day-banner{
+    background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.25);
+    border-radius:12px; padding:20px; text-align:center; margin:16px 0;
+  }
+  .skipped-day-banner .icon{ font-size:32px; margin-bottom:8px; }
+  .skipped-day-banner .title{ font-family:'Oswald',sans-serif; font-size:18px; font-weight:600; color:var(--bad); margin-bottom:4px; }
+  .skipped-day-banner .sub{ font-size:13px; color:var(--text-dim); }
+
   /* ── Alternative toggle ───────────────────────────────────── */
   .alt-toggle-row{
     display:flex; align-items:center; gap:10px; margin-top:10px;
@@ -297,9 +338,24 @@
       <img src="tatva-logo.png" alt="Tatva" class="brand-logo" />
       <p class="brand-tagline">The Essence of Becoming Better.</p>
     </div>
-    <span class="split-badge" id="splitBadge">—</span>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <span class="split-badge" id="splitBadge">—</span>
+      <button class="skip-day-btn" id="skipDayBtn" onclick="toggleSkipPanel()" style="display:none">✕ Skip</button>
+    </div>
   </div>
   <p class="date-line" id="dateLine">Loading today's session…</p>
+
+  <!-- Skip panel — expands below header -->
+  <div class="skip-panel" id="skipPanel">
+    <div class="skip-panel-label">Why are you skipping? <span style="color:var(--text-dim);font-size:11px">(optional)</span></div>
+    <div class="skip-reasons">
+      <button class="reason-pill" data-reason="Rest" onclick="selectReason(this)">😴 Rest</button>
+      <button class="reason-pill" data-reason="Sick" onclick="selectReason(this)">🤒 Sick</button>
+      <button class="reason-pill" data-reason="Injury" onclick="selectReason(this)">🤕 Injury</button>
+      <button class="reason-pill" data-reason="Travel" onclick="selectReason(this)">✈️ Travel</button>
+    </div>
+    <button class="skip-confirm-btn" onclick="confirmSkip()">Confirm — Log as Skipped</button>
+  </div>
 </header>
 
 <main id="main">
@@ -349,6 +405,95 @@
   function formatDateNice(dateStr){
     const d = new Date(dateStr + "T00:00:00");
     return d.toLocaleDateString('en-IN', { weekday:'long', day:'numeric', month:'short', year:'numeric' });
+  }
+
+  // ─────────────────────────────────────────────────────────────
+  // Skip day logic
+  // ─────────────────────────────────────────────────────────────
+  let selectedSkipReason = null;
+
+  function toggleSkipPanel(){
+    const panel = document.getElementById('skipPanel');
+    const btn   = document.getElementById('skipDayBtn');
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open', !isOpen);
+    btn.classList.toggle('active', !isOpen);
+    if(isOpen){
+      // Closing — reset reason selection
+      selectedSkipReason = null;
+      document.querySelectorAll('.reason-pill').forEach(p=>p.classList.remove('selected'));
+    }
+  }
+
+  function selectReason(el){
+    document.querySelectorAll('.reason-pill').forEach(p=>p.classList.remove('selected'));
+    if(selectedSkipReason === el.dataset.reason){
+      // Tap same pill again = deselect
+      selectedSkipReason = null;
+    } else {
+      el.classList.add('selected');
+      selectedSkipReason = el.dataset.reason;
+    }
+  }
+
+  async function confirmSkip(){
+    const today = getISTDateString();
+
+    // Check if any exercises already logged today
+    const { data: existing } = await sb
+      .from('actual_workouts')
+      .select('id')
+      .eq('user_id', USER_ID)
+      .eq('date', today)
+      .neq('exercise_name', '__day_skipped__')
+      .limit(1);
+
+    if(existing && existing.length > 0){
+      const confirmed = window.confirm(
+        "You've already logged some exercises today.\n\nConfirming skip will clear all logged exercises for today and mark it as skipped.\n\nAre you sure?"
+      );
+      if(!confirmed) return;
+    }
+
+    // Delete any existing actuals for today
+    await sb.from('actual_workouts').delete().eq('user_id', USER_ID).eq('date', today);
+
+    // Insert skip record
+    const { error } = await sb.from('actual_workouts').insert({
+      user_id: USER_ID,
+      session_id: SESSION?.id || null,
+      date: today,
+      exercise_name: '__day_skipped__',
+      planned_sets: null,
+      planned_reps: null,
+      planned_weight_kg: null,
+      actual_sets: null,
+      actual_reps: null,
+      actual_weight_kg: null,
+      skipped: true,
+      notes: selectedSkipReason || null
+    });
+
+    if(error){
+      alert('Error saving: ' + error.message);
+      return;
+    }
+
+    // Hide skip panel and save bar
+    document.getElementById('skipPanel').classList.remove('open');
+    document.getElementById('skipDayBtn').classList.remove('active');
+    document.getElementById('saveBar').style.display = 'none';
+
+    // Replace exercise list with skipped banner
+    const reasonText = selectedSkipReason ? ` — ${selectedSkipReason}` : '';
+    document.getElementById('main').innerHTML = `
+      <div class="skipped-day-banner">
+        <div class="icon">🛌</div>
+        <div class="title">Day Logged as Skipped${reasonText}</div>
+        <div class="sub">Rest well. Come back stronger tomorrow.</div>
+      </div>`;
+
+    selectedSkipReason = null;
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -425,6 +570,25 @@
     if (prevRows){
       prevRows.forEach(r => { PREV_ACTUALS[r.exercise_name] = r; hadPrev = true; });
     }
+
+    // Check if day was already skipped
+    const daySkipped = prevRows && prevRows.some(r => r.exercise_name === '__day_skipped__');
+    if(daySkipped){
+      const skipRow = prevRows.find(r => r.exercise_name === '__day_skipped__');
+      const reasonText = skipRow?.notes ? ` — ${skipRow.notes}` : '';
+      document.getElementById('main').innerHTML = `
+        <div class="skipped-day-banner">
+          <div class="icon">🛌</div>
+          <div class="title">Day Logged as Skipped${reasonText}</div>
+          <div class="sub">Rest well. Come back stronger tomorrow.</div>
+        </div>`;
+      // Show skip button so user can undo by re-opening the panel
+      document.getElementById('skipDayBtn').style.display = 'block';
+      return;
+    }
+
+    // Show skip button now that we have a session
+    document.getElementById('skipDayBtn').style.display = 'block';
 
     renderExercises(EXERCISES, cardio, hadPrev);
     document.getElementById('saveBar').style.display = 'flex';
