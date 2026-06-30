@@ -293,7 +293,30 @@
   }
   .skipped-day-banner .icon{ font-size:32px; margin-bottom:8px; }
   .skipped-day-banner .title{ font-family:'Oswald',sans-serif; font-size:18px; font-weight:600; color:var(--bad); margin-bottom:4px; }
-  .skipped-day-banner .sub{ font-size:13px; color:var(--text-dim); }
+  .skipped-day-banner .sub{ font-size:13px; color:var(--text-dim); margin-bottom:14px; }
+  .undo-skip-btn{
+    font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+    background:none; border:1px solid var(--line); color:var(--text-dim);
+    border-radius:8px; padding:9px 16px; cursor:pointer; transition:all 0.15s;
+  }
+  .undo-skip-btn:hover{ border-color:var(--text); color:var(--text); }
+  .undo-skip-btn:active{ opacity:0.7; }
+
+  /* ── Date range picker (Travel / Injury) ─────────────────── */
+  .date-range-wrap{ display:none; margin-bottom:10px; }
+  .date-range-wrap.open{ display:block; }
+  .date-range-row{ display:flex; gap:8px; margin-bottom:6px; }
+  .date-field{ flex:1; }
+  .date-field label{
+    display:block; font-size:11px; color:var(--text-dim);
+    text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;
+  }
+  .date-field input{
+    width:100%; background:var(--panel-2); border:1px solid var(--line);
+    color:var(--text); border-radius:8px; padding:9px 8px; font-size:13px;
+    font-family:'Inter',sans-serif;
+  }
+  .date-range-hint{ font-size:11px; color:var(--text-dim); margin-bottom:10px; }
 
   /* ── Alternative toggle ───────────────────────────────────── */
   .alt-toggle-row{
@@ -354,6 +377,19 @@
       <button class="reason-pill" data-reason="Injury" onclick="selectReason(this)">🤕 Injury</button>
       <button class="reason-pill" data-reason="Travel" onclick="selectReason(this)">✈️ Travel</button>
     </div>
+    <div class="date-range-wrap" id="dateRangeWrap">
+      <div class="date-range-row">
+        <div class="date-field">
+          <label>From</label>
+          <input type="date" id="skipFromDate" />
+        </div>
+        <div class="date-field">
+          <label>To</label>
+          <input type="date" id="skipToDate" />
+        </div>
+      </div>
+      <div class="date-range-hint">All days in this range will be marked skipped — no need to come back daily.</div>
+    </div>
     <button class="skip-confirm-btn" onclick="confirmSkip()">Confirm — Log as Skipped</button>
   </div>
 </header>
@@ -411,6 +447,7 @@
   // Skip day logic
   // ─────────────────────────────────────────────────────────────
   let selectedSkipReason = null;
+  const RANGE_REASONS = ['Travel', 'Injury']; // these reasons show the date picker
 
   function toggleSkipPanel(){
     const panel = document.getElementById('skipPanel');
@@ -419,25 +456,59 @@
     panel.classList.toggle('open', !isOpen);
     btn.classList.toggle('active', !isOpen);
     if(isOpen){
-      // Closing — reset reason selection
-      selectedSkipReason = null;
-      document.querySelectorAll('.reason-pill').forEach(p=>p.classList.remove('selected'));
+      // Closing — reset everything
+      resetSkipPanel();
+    } else {
+      // Opening — pre-fill From date with today
+      document.getElementById('skipFromDate').value = getISTDateString();
+      document.getElementById('skipToDate').value = getISTDateString();
     }
+  }
+
+  function resetSkipPanel(){
+    selectedSkipReason = null;
+    document.querySelectorAll('.reason-pill').forEach(p=>p.classList.remove('selected'));
+    document.getElementById('dateRangeWrap').classList.remove('open');
   }
 
   function selectReason(el){
     document.querySelectorAll('.reason-pill').forEach(p=>p.classList.remove('selected'));
+    const wrap = document.getElementById('dateRangeWrap');
+
     if(selectedSkipReason === el.dataset.reason){
       // Tap same pill again = deselect
       selectedSkipReason = null;
+      wrap.classList.remove('open');
     } else {
       el.classList.add('selected');
       selectedSkipReason = el.dataset.reason;
+      const showRange = RANGE_REASONS.includes(selectedSkipReason);
+      wrap.classList.toggle('open', showRange);
+      if(showRange){
+        // Default end date to same as start if not already changed
+        const fromVal = document.getElementById('skipFromDate').value || getISTDateString();
+        document.getElementById('skipFromDate').value = fromVal;
+        document.getElementById('skipFromDate').min = getISTDateString();
+        document.getElementById('skipToDate').min = fromVal;
+      }
     }
   }
 
   async function confirmSkip(){
     const today = getISTDateString();
+    const isRange = selectedSkipReason && RANGE_REASONS.includes(selectedSkipReason);
+
+    let startDate = today;
+    let endDate = today;
+
+    if(isRange){
+      startDate = document.getElementById('skipFromDate').value || today;
+      endDate = document.getElementById('skipToDate').value || startDate;
+      if(endDate < startDate){
+        alert('"To" date must be on or after "From" date.');
+        return;
+      }
+    }
 
     // Check if any exercises already logged today
     const { data: existing } = await sb
@@ -455,14 +526,15 @@
       if(!confirmed) return;
     }
 
-    // Delete any existing actuals for today
+    // Delete any existing actuals for today (and any prior skip rows covering today)
     await sb.from('actual_workouts').delete().eq('user_id', USER_ID).eq('date', today);
 
-    // Insert skip record
+    // Insert skip record — one row represents the whole range
     const { error } = await sb.from('actual_workouts').insert({
       user_id: USER_ID,
       session_id: SESSION?.id || null,
-      date: today,
+      date: startDate,
+      skip_end_date: isRange ? endDate : null,
       exercise_name: '__day_skipped__',
       planned_sets: null,
       planned_reps: null,
@@ -484,16 +556,71 @@
     document.getElementById('skipDayBtn').classList.remove('active');
     document.getElementById('saveBar').style.display = 'none';
 
-    // Replace exercise list with skipped banner
-    const reasonText = selectedSkipReason ? ` — ${selectedSkipReason}` : '';
+    showSkippedBanner(startDate, isRange ? endDate : null, selectedSkipReason);
+    resetSkipPanel();
+  }
+
+  function showSkippedBanner(startDate, endDate, reason){
+    const reasonText = reason ? ` — ${reason}` : '';
+    const today = getISTDateString();
+
+    let rangeText = '';
+    let undoHtml = `<button class="undo-skip-btn" onclick="undoSkip()">↩️ Undo Skip</button>`;
+
+    if(endDate && endDate !== startDate){
+      // Multi-day range — show progress
+      const totalDays = dateDiffDays(startDate, endDate) + 1;
+      const dayNum = Math.min(dateDiffDays(startDate, today) + 1, totalDays);
+      rangeText = `<div class="sub">Skipping ${fmtDateShort(startDate)} – ${fmtDateShort(endDate)} (Day ${Math.max(dayNum,1)} of ${totalDays})</div>`;
+    } else {
+      rangeText = `<div class="sub">Rest well. Come back stronger tomorrow.</div>`;
+    }
+
     document.getElementById('main').innerHTML = `
       <div class="skipped-day-banner">
         <div class="icon">🛌</div>
-        <div class="title">Day Logged as Skipped${reasonText}</div>
-        <div class="sub">Rest well. Come back stronger tomorrow.</div>
+        <div class="title">Day${endDate&&endDate!==startDate?'s':''} Logged as Skipped${reasonText}</div>
+        ${rangeText}
+        ${undoHtml}
       </div>`;
+  }
 
-    selectedSkipReason = null;
+  async function undoSkip(){
+    const confirmed = window.confirm("This will cancel your skip and let you log today's workout normally. Continue?");
+    if(!confirmed) return;
+
+    const today = getISTDateString();
+    // Delete any skip row covering today
+    const { data: skipRows } = await sb
+      .from('actual_workouts')
+      .select('*')
+      .eq('user_id', USER_ID)
+      .eq('exercise_name', '__day_skipped__');
+
+    const covering = (skipRows||[]).filter(r => {
+      const start = r.date;
+      const end = r.skip_end_date || r.date;
+      return today >= start && today <= end;
+    });
+
+    for(const row of covering){
+      await sb.from('actual_workouts').delete().eq('id', row.id);
+    }
+
+    // Reload the page state
+    document.getElementById('skipDayBtn').style.display = 'none';
+    PREV_ACTUALS = {};
+    init();
+  }
+
+  function dateDiffDays(a, b){
+    const d1 = new Date(a+'T00:00:00');
+    const d2 = new Date(b+'T00:00:00');
+    return Math.round((d2-d1)/(1000*60*60*24));
+  }
+
+  function fmtDateShort(dateStr){
+    return new Date(dateStr+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short'});
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -571,18 +698,22 @@
       prevRows.forEach(r => { PREV_ACTUALS[r.exercise_name] = r; hadPrev = true; });
     }
 
-    // Check if day was already skipped
-    const daySkipped = prevRows && prevRows.some(r => r.exercise_name === '__day_skipped__');
-    if(daySkipped){
-      const skipRow = prevRows.find(r => r.exercise_name === '__day_skipped__');
-      const reasonText = skipRow?.notes ? ` — ${skipRow.notes}` : '';
-      document.getElementById('main').innerHTML = `
-        <div class="skipped-day-banner">
-          <div class="icon">🛌</div>
-          <div class="title">Day Logged as Skipped${reasonText}</div>
-          <div class="sub">Rest well. Come back stronger tomorrow.</div>
-        </div>`;
-      // Show skip button so user can undo by re-opening the panel
+    // Check if today falls within any skip range
+    const { data: allSkipRows } = await sb
+      .from('actual_workouts')
+      .select('*')
+      .eq('user_id', USER_ID)
+      .eq('exercise_name', '__day_skipped__');
+
+    const activeSkip = (allSkipRows||[]).find(r => {
+      const start = r.date;
+      const end = r.skip_end_date || r.date;
+      return today >= start && today <= end;
+    });
+
+    if(activeSkip){
+      showSkippedBanner(activeSkip.date, activeSkip.skip_end_date, activeSkip.notes);
+      // Show skip button so user can still see it (panel itself stays closed)
       document.getElementById('skipDayBtn').style.display = 'block';
       return;
     }
