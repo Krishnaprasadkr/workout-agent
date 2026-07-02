@@ -6,11 +6,13 @@ import requests
 
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
-# Model fallback chain — if one hits 429 or fails, tries the next
+# Model fallback chain — updated July 2026
+# gemini-2.0-flash and gemini-1.5-flash shut down June 1, 2026
+# Current free tier models: gemini-3.1-flash-lite, gemini-2.5-flash-lite, gemini-3-flash-preview
 MODELS = [
-    "gemini-3-flash",        # Primary free tier model
-    "gemini-3.1-flash-lite", # High volume, lightweight
-    "gemini-2.5-flash",
+    "gemini-3.1-flash-lite",      # Free, fast, high quality — primary
+    "gemini-2.5-flash-lite",      # Free, reliable fallback
+    "gemini-3-flash-preview",     # Free preview, secondary fallback
 ]
 
 BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
