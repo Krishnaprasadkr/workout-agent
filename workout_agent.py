@@ -48,7 +48,7 @@ def main():
     history = supabase_helper.get_history()
     print(f"Loaded {len(history)} past sessions from Supabase.")
 
-    # 2. Determine today's split
+    # 2. Determine today's split (fixed day-of-week schedule)
     split = determine_split(history, today)
     print(f"Today's split: {split}")
 
@@ -78,6 +78,7 @@ def main():
         telegram_helper.send(summary)
         print("Weekly summary sent.")
 
+
 def determine_split(history, today):
     """
     Determine today's split based on fixed day-of-week schedule.
@@ -96,6 +97,7 @@ def determine_split(history, today):
     print(f"Day of week: {today.strftime('%A')} → Split: {split}")
     return split
 
+
 def compute_working_weights(split, history):
     """
     Apply progressive overload:
@@ -103,7 +105,6 @@ def compute_working_weights(split, history):
     - Isolations: +1kg every 2 sessions of same split
     """
     exercises = BASELINE.get(split, [])
-    # Count how many times this split has been done
     split_count = sum(1 for h in history if h.get("split") == split)
 
     COMPOUND = ["Barbell", "Deadlift", "Squat", "Press", "Row", "Pulldown"]
@@ -121,6 +122,7 @@ def compute_working_weights(split, history):
         })
     return result
 
+
 def build_workout_message(today, split, workout_plan):
     day_name = today.strftime("%A, %d %b %Y")
     lines = [
@@ -135,10 +137,10 @@ def build_workout_message(today, split, workout_plan):
         elif ex.get("type") == "dropset":
             tag = " 🔽 DROPSET"
 
-        lines.append(f"\n*{i}. {ex['name']}*{tag}")
-        lines.append(f"   🎯 Muscle: {ex['muscle']}")
-        lines.append(f"   📊 Sets × Reps: {ex['sets']} × {ex['reps']}")
-        lines.append(f"   🏋️ Weight: {ex['weight_kg']}kg")
+        lines.append(f"\n*{i}. {ex.get('name', 'Exercise')}*{tag}")
+        lines.append(f"   🎯 Muscle: {ex.get('muscle', '—')}")
+        lines.append(f"   📊 Sets × Reps: {ex.get('sets', '—')} × {ex.get('reps', '—')}")
+        lines.append(f"   🏋️ Weight: {ex.get('weight_kg', '—')}kg")
         if ex.get("partner"):
             lines.append(f"   ↪️ With: {ex['partner']}")
         if ex.get("alternative"):
@@ -164,6 +166,7 @@ def build_workout_message(today, split, workout_plan):
     ]
     return "\n".join(lines)
 
+
 def build_rest_message(today):
     day_name = today.strftime("%A, %d %b %Y")
     return (
@@ -174,6 +177,7 @@ def build_rest_message(today):
         "✅ Optional: 30 min easy walk\n\n"
         "💪 Come back stronger tomorrow."
     )
+
 
 if __name__ == "__main__":
     main()
