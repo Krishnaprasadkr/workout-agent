@@ -64,15 +64,18 @@ def main():
     # 4. Ask Gemini to build the structured workout plan
     workout_plan = gemini_helper.generate_workout(split, working_weights, history)
 
-    # 5. Log today's session to Supabase
+    # 5. Fetch last session data per exercise (actual logged or planned fallback)
+    actuals_history = supabase_helper.get_actuals_history()
+
+    # 6. Log today's session to Supabase
     supabase_helper.log_session(today, split, workout_plan)
 
-    # 6. Build and send Telegram message
-    msg = build_workout_message(today, split, workout_plan)
+    # 7. Build and send Telegram message
+    msg = build_workout_message(today, split, workout_plan, actuals_history)
     telegram_helper.send(msg)
     print("Workout message sent successfully.")
 
-    # 7. If Sunday, send weekly summary
+    # 8. If Sunday, send weekly summary
     if today.weekday() == 6:
         summary = gemini_helper.generate_weekly_summary(history)
         telegram_helper.send(summary)
@@ -123,7 +126,9 @@ def compute_working_weights(split, history):
     return result
 
 
-def build_workout_message(today, split, workout_plan):
+def build_workout_message(today, split, workout_plan, actuals_history=None):
+    if actuals_history is None:
+        actuals_history = {}
     day_name = today.strftime("%A, %d %b %Y")
     lines = [
         f"💪 *Daily Workout — {split.upper()}*",
@@ -141,6 +146,21 @@ def build_workout_message(today, split, workout_plan):
         lines.append(f"   🎯 Muscle: {ex.get('muscle', '—')}")
         lines.append(f"   📊 Sets × Reps: {ex.get('sets', '—')} × {ex.get('reps', '—')}")
         lines.append(f"   🏋️ Weight: {ex.get('weight_kg', '—')}kg")
+
+        # Last session line
+        ex_name = ex.get('name', '')
+        last = actuals_history.get(ex_name)
+        if last:
+            sets = last.get("actual_sets") or "—"
+            reps = last.get("actual_reps") or "—"
+            weight = last.get("actual_weight_kg") or "—"
+            if last.get("is_actual"):
+                lines.append(f"   📈 Last session: {sets} × {reps} @ {weight}kg ✅")
+            else:
+                lines.append(f"   📈 Last planned: {weight}kg")
+        else:
+            lines.append(f"   📈 Last session: Not done yet")
+
         if ex.get("partner"):
             lines.append(f"   ↪️ With: {ex['partner']}")
         if ex.get("alternative"):
