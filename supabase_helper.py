@@ -47,7 +47,11 @@ def get_history():
 
 
 def log_session(today: date, split: str, workout_plan: dict):
-    """Insert today's session into the sessions table."""
+    """
+    Insert today's session into the sessions table.
+    If a session for this user + date already exists, UPDATE it instead
+    of inserting a duplicate (e.g. manual test run + scheduled run same day).
+    """
 
     exercise_names = ", ".join(
         ex["name"] for ex in workout_plan.get("exercises", [])
@@ -74,5 +78,90 @@ def log_session(today: date, split: str, workout_plan: dict):
         "full_plan_json": workout_plan,  # JSONB column — pass dict directly
     }
 
-    _client.table("sessions").insert(row).execute()
-    print(f"Session logged to Supabase: {split} on {today}")
+    # Check if a session already exists for this user + date
+    existing = (
+        _client.table("sessions")
+        .select("id")
+        .eq("user_id", USER_ID)
+        .eq("date", str(today))
+        .execute()
+    )
+
+    if existing.data:
+        # Update the existing row instead of creating a duplicate
+        session_id = existing.data[0]["id"]
+        _client.table("sessions").update(row).eq("id", session_id).execute()
+        print(f"Session UPDATED (already existed today) to Supabase: {split} on {today}")
+    else:
+        _client.table("sessions").insert(row).execute()
+        print(f"Session INSERTED to Supabase: {split} on {today}")
+
+
+def get_actuals_history():
+    """
+    Fetch the most recent actual workout entry per exercise name.
+    Used to show 'Last session: 4 × 8 @ 50kg' in the Telegram message.
+
+    Returns a dict keyed by exercise_name:
+    {
+      "Flat Barbell Bench Press": {
+          "actual_sets": 4,
+          "actual_reps": "8",
+          "actual_weight_kg": 50.0,
+          "date": "2026-06-30",
+          "is_actual": True   # True = real logged data, False = planned fallback
+      },
+      ...
+    }
+    """
+    # Step 1 — fetch all actual workout rows for this user (excluding skip markers)
+    result = (
+        _client.table("actual_workouts")
+        .select("exercise_name, actual_sets, actual_reps, actual_weight_kg, date")
+        .eq("user_id", USER_ID)
+        .eq("skipped", False)
+        .neq("exercise_name", "__day_skipped__")
+        .not_.is_("actual_weight_kg", "null")
+        .order("date", desc=False)
+        .execute()
+    )
+    rows = result.data or []
+
+    # Keep only the most recent entry per exercise
+    best_actual = {}
+    for r in rows:
+        ex = r.get("exercise_name")
+        if ex:
+            best_actual[ex] = {
+                "actual_sets":      r.get("actual_sets"),
+                "actual_reps":      r.get("actual_reps"),
+                "actual_weight_kg": r.get("actual_weight_kg"),
+                "date":             str(r.get("date")),
+                "is_actual":        True,
+            }
+
+    # Step 2 — for any exercise NOT in actual_workouts, fall back to
+    # most recent planned weight from the sessions table's full_plan_json
+    sessions_result = (
+        _client.table("sessions")
+        .select("date, full_plan_json")
+        .eq("user_id", USER_ID)
+        .order("date", desc=False)
+        .execute()
+    )
+    for s in (sessions_result.data or []):
+        plan = s.get("full_plan_json") or {}
+        for ex in plan.get("exercises", []):
+            name = ex.get("name")
+            if name and name not in best_actual:
+                # Only add as fallback if not already covered by actual data
+                best_actual[name] = {
+                    "actual_sets":      ex.get("sets"),
+                    "actual_reps":      str(ex.get("reps", "")),
+                    "actual_weight_kg": ex.get("weight_kg"),
+                    "date":             str(s.get("date")),
+                    "is_actual":        False,  # this is planned, not actual
+                }
+
+    print(f"[Supabase] Loaded last session data for {len(best_actual)} exercises.")
+    return best_actual
