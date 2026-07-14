@@ -101,18 +101,7 @@ def get_actuals_history():
     """
     Fetch the most recent actual workout entry per exercise name.
     Used to show 'Last session: 4 × 8 @ 50kg' in the Telegram message.
-
-    Returns a dict keyed by exercise_name:
-    {
-      "Flat Barbell Bench Press": {
-          "actual_sets": 4,
-          "actual_reps": "8",
-          "actual_weight_kg": 50.0,
-          "date": "2026-06-30",
-          "is_actual": True   # True = real logged data, False = planned fallback
-      },
-      ...
-    }
+    Returns a dict keyed by exercise_name.
     """
     # Step 1 — fetch all actual workout rows for this user (excluding skip markers)
     result = (
@@ -121,27 +110,31 @@ def get_actuals_history():
         .eq("user_id", USER_ID)
         .eq("skipped", False)
         .neq("exercise_name", "__day_skipped__")
-        .not_.is_("actual_weight_kg", "null")
         .order("date", desc=False)
         .execute()
     )
     rows = result.data or []
+    print(f"[Supabase] actual_workouts raw rows: {len(rows)}")
 
-    # Keep only the most recent entry per exercise
+    # Keep only the most recent entry per exercise that has a weight logged
     best_actual = {}
     for r in rows:
         ex = r.get("exercise_name")
-        if ex:
-            best_actual[ex] = {
-                "actual_sets":      r.get("actual_sets"),
-                "actual_reps":      r.get("actual_reps"),
-                "actual_weight_kg": r.get("actual_weight_kg"),
-                "date":             str(r.get("date")),
-                "is_actual":        True,
-            }
+        weight = r.get("actual_weight_kg")
+        # Skip rows with no weight logged
+        if not ex or weight is None:
+            continue
+        best_actual[ex] = {
+            "actual_sets":      r.get("actual_sets"),
+            "actual_reps":      r.get("actual_reps"),
+            "actual_weight_kg": weight,
+            "date":             str(r.get("date")),
+            "is_actual":        True,
+        }
+    print(f"[Supabase] Exercises with actual logged weight: {len(best_actual)}")
 
     # Step 2 — for any exercise NOT in actual_workouts, fall back to
-    # most recent planned weight from the sessions table's full_plan_json
+    # most recent planned weight from sessions table's full_plan_json
     sessions_result = (
         _client.table("sessions")
         .select("date, full_plan_json")
@@ -149,19 +142,27 @@ def get_actuals_history():
         .order("date", desc=False)
         .execute()
     )
+    fallback_count = 0
     for s in (sessions_result.data or []):
         plan = s.get("full_plan_json") or {}
+        # full_plan_json comes back as dict from JSONB — handle both dict and string
+        if isinstance(plan, str):
+            try:
+                plan = json.loads(plan)
+            except Exception:
+                continue
         for ex in plan.get("exercises", []):
             name = ex.get("name")
-            if name and name not in best_actual:
-                # Only add as fallback if not already covered by actual data
+            weight = ex.get("weight_kg")
+            if name and weight and name not in best_actual:
                 best_actual[name] = {
                     "actual_sets":      ex.get("sets"),
                     "actual_reps":      str(ex.get("reps", "")),
-                    "actual_weight_kg": ex.get("weight_kg"),
+                    "actual_weight_kg": weight,
                     "date":             str(s.get("date")),
-                    "is_actual":        False,  # this is planned, not actual
+                    "is_actual":        False,
                 }
+                fallback_count += 1
 
-    print(f"[Supabase] Loaded last session data for {len(best_actual)} exercises.")
+    print(f"[Supabase] Total exercises with history: {len(best_actual)} ({fallback_count} from planned fallback)")
     return best_actual
