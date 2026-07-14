@@ -143,6 +143,9 @@
   }
   .meta-line.alt{ color: var(--shoulders); }
   .meta-line.note{ color: var(--warn); }
+  .meta-line.last-session{ color: var(--good); }
+  .meta-line.last-planned{ color: var(--text-dim); font-style: italic; }
+  .meta-line.not-done{ color: var(--text-dim); font-style: italic; }
 
   /* ── Inputs row ───────────────────────────────────────────── */
   .inputs{
@@ -610,6 +613,7 @@
     // Reload the page state
     document.getElementById('skipDayBtn').style.display = 'none';
     PREV_ACTUALS = {};
+    LAST_SESSION = {};
     init();
   }
 
@@ -655,6 +659,7 @@
   let SESSION = null;
   let EXERCISES = [];
   let PREV_ACTUALS = {};
+  let LAST_SESSION = {}; // most recent actual per exercise name (excluding today)
 
   async function init(){
     const today = getISTDateString();
@@ -686,7 +691,7 @@
     badge.textContent = SESSION.split;
     document.documentElement.style.setProperty('--accent', SPLIT_COLORS[SESSION.split] || 'var(--push)');
 
-    // Check for previously logged actuals today
+    // Check for previously logged actuals today (for pre-filling inputs)
     const { data: prevRows } = await sb
       .from('actual_workouts')
       .select('*')
@@ -697,6 +702,26 @@
     if (prevRows){
       prevRows.forEach(r => { PREV_ACTUALS[r.exercise_name] = r; hadPrev = true; });
     }
+
+    // Fetch last session data per exercise (excluding today) for display
+    const { data: lastRows } = await sb
+      .from('actual_workouts')
+      .select('exercise_name, actual_sets, actual_reps, actual_weight_kg, date')
+      .eq('user_id', USER_ID)
+      .eq('skipped', false)
+      .neq('exercise_name', '__day_skipped__')
+      .lt('date', today)
+      .order('date', { ascending: false });
+
+    if(lastRows){
+      lastRows.forEach(r => {
+        // Only keep the most recent entry per exercise (since ordered desc, first wins)
+        if(!LAST_SESSION[r.exercise_name] && r.actual_weight_kg){
+          LAST_SESSION[r.exercise_name] = r;
+        }
+      });
+    }
+    console.log(`[Tatva] Last session data loaded for ${Object.keys(LAST_SESSION).length} exercises`);
 
     // Check if today falls within any skip range
     const { data: allSkipRows } = await sb
@@ -783,6 +808,17 @@
         </div>
         <p class="muscle">🎯 ${escapeHtml(ex.muscle || '')}</p>
         <p class="planned">Planned: <b>${ex.sets} × ${ex.reps}</b> @ <b>${ex.weight_kg}kg</b>${ex.partner ? ` &nbsp;↪ with ${escapeHtml(ex.partner)}` : ''}</p>
+        ${(()=>{
+          const activeName = usedAlt ? altName : ex.name;
+          const last = LAST_SESSION[activeName];
+          if(last && last.actual_weight_kg){
+            const s = last.actual_sets || '—';
+            const r = last.actual_reps || '—';
+            const w = last.actual_weight_kg;
+            return `<p class="meta-line last-session">📈 Last session: ${s} × ${r} @ ${w}kg ✅</p>`;
+          }
+          return `<p class="meta-line not-done">📈 Last session: Not done yet</p>`;
+        })()}
         ${toggleHtml}
         ${ex.note ? `<p class="meta-line note">💡 ${escapeHtml(ex.note)}</p>` : ''}
 
