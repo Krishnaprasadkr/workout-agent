@@ -62,7 +62,7 @@ def main():
     working_weights = compute_working_weights(split, history)
 
     # 4. Ask Gemini to build the structured workout plan
-    workout_plan = gemini_helper.generate_workout(split, working_weights, history)
+    workout_plan = gemini_helper.generate_workout(split, working_weights, history, today)
 
     # 5. Fetch last session data per exercise (actual logged or planned fallback)
     actuals_history = supabase_helper.get_actuals_history()
