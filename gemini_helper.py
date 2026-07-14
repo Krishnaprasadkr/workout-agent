@@ -138,49 +138,124 @@ def _rebuild_from_stars(content: str) -> str:
     return "\n".join(out)
 
 
-def generate_workout(split, working_weights, history):
+def generate_workout(split, working_weights, history, today=None):
     """Ask Gemini to generate a structured workout plan for today."""
 
     history_summary = _summarise_history(history, split)
 
+    # Determine if today is Friday Pull (day index 4 = Friday in Mon=0 system)
+    is_friday_pull = False
+    if today is not None and split == "Pull":
+        day_idx = today.weekday()  # Mon=0, Fri=4
+        is_friday_pull = (day_idx == 4)
+
+    # Build split-specific structure instructions
+    if split == "Push":
+        split_structure = """PUSH DAY — CHEST + TRICEPS ONLY. No shoulder, lateral raise, rear delt, or OHP.
+
+MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
+  Position 1: Heavy chest compound — Flat Barbell Bench Press (ALWAYS first, ALWAYS)
+  Position 2: Secondary chest compound — Incline DB Press or Incline Barbell Press
+  Position 3: Chest isolation — Pec Dec / Cable Fly / High-to-Low Cable Fly
+  Position 4: Tricep compound — Close Grip Bench or Weighted Dips
+  Position 5: Tricep long head isolation — Overhead Tricep Extension or Skull Crushers (arm must go overhead)
+  Position 6: Tricep lateral head isolation — Straight Bar Pushdown or Rope Pushdown
+  Position 7: Second chest or tricep isolation (vary from history)
+
+CHEST ZONES: Upper=Incline movements, Middle=Flat/Pec Dec, Lower=Decline/High-to-Low Cable
+TRICEP HEADS: Long Head=overhead movements, Lateral=pushdowns, Medial=reverse grip pushdown
+Vary chest zone emphasis between Push Day 1 and Push Day 2."""
+
+    elif split == "Pull":
+        if is_friday_pull:
+            split_structure = """PULL DAY (FRIDAY) — BACK + BICEPS ONLY. No shoulder exercises.
+
+⚠️ FRIDAY RULE: Deadlift is BANNED today. Saturday is Legs — Deadlift would destroy recovery.
+
+MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
+  Position 1: Heavy back compound ROW (choose ONE from: Barbell Bent Over Row, Chest-Supported DB Row, Meadows Row, Pendlay Row, T-Bar Row) — NO DEADLIFT
+  Position 2: Back width compound — Lat Pulldown or Wide Grip Pullup
+  Position 3: Secondary back row — Seated Cable Row or Single Arm DB Row
+  Position 4: Back isolation — Straight Arm Pulldown or Cable Pullover
+  Position 5: Rear delt — Face Pulls or Reverse Pec Dec
+  Position 6: Bicep compound — Barbell Curl or Incline DB Curl
+  Position 7: Bicep isolation — Hammer Curl or Concentration Curl or Preacher Curl
+
+BACK FOCUS: Width=Lat Pulldown/Pullup, Thickness=Row movements
+BICEP HEADS: Long Head (peak)=Incline/Hammer Curl, Short Head (width)=Preacher/Concentration Curl"""
+        else:
+            split_structure = """PULL DAY (TUESDAY) — BACK + BICEPS ONLY. No shoulder exercises.
+
+MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
+  Position 1: Deadlift — COMPULSORY, always position 1 on Tuesday Pull (heaviest compound, done first)
+  Position 2: Back width compound — Lat Pulldown or Wide Grip Pullup
+  Position 3: Back thickness compound — Seated Cable Row or Barbell Row
+  Position 4: Back isolation — Straight Arm Pulldown or Cable Pullover
+  Position 5: Rear delt — Face Pulls or Reverse Pec Dec
+  Position 6: Bicep compound — Barbell Curl or Incline DB Curl
+  Position 7: Bicep isolation — Hammer Curl or Concentration Curl or Preacher Curl
+
+BACK FOCUS: Width=Lat Pulldown/Pullup, Thickness=Seated Row/Barbell Row
+BICEP HEADS: Long Head (peak)=Incline/Hammer Curl, Short Head (width)=Preacher/Concentration Curl"""
+
+    elif split == "Legs":
+        split_structure = """LEGS DAY — LOWER BODY ONLY. No upper body exercises.
+
+MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
+  Position 1: Heavy quad compound — Barbell Squat (ALWAYS first)
+  Position 2: Secondary quad compound — Leg Press or Hack Squat
+  Position 3: Hamstring compound — Romanian Deadlift (DB or Barbell)
+  Position 4: Hamstring isolation — Leg Curl (machine)
+  Position 5: Glute isolation — Hip Thrust or Bulgarian Split Squat
+  Position 6: Quad isolation — Leg Extension (machine)
+  Position 7: Calves — Standing Calf Raise or Seated Calf Raise
+
+Hit all four muscle groups: Quads, Hamstrings, Glutes, Calves — every session."""
+
+    elif split == "Shoulders":
+        split_structure = """SHOULDERS DAY — SIDE DELTS ARE THE PRIORITY. Front delts already trained heavily on both Push days.
+
+MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
+  Position 1: Dumbbell Lateral Raise — ALWAYS this exact exercise, ALWAYS first. 4 sets. Side delts are the priority.
+  Position 2: Overhead Press (DB or Barbell) — 3 sets only, MODERATE weight. Front delt maintenance, NOT the focus.
+  Position 3: Rear delt compound — Face Pulls or Bent Over Lateral Raise
+  Position 4: Rear delt isolation — Reverse Pec Dec
+  Position 5: Trap compound — Smith Machine Shrugs or Barbell Shrugs
+  Position 6: Wrist Curls (barbell or dumbbell) — Forearms — Flexor Carpi Radialis. ALWAYS position 6.
+  Position 7: Second rear delt or trap variation (e.g. Upright Row, Cable Rear Delt Fly, or Face Pull variant)
+
+⚠️ STRICT SHOULDER RULES:
+- Dumbbell Lateral Raise is FIXED at position 1 — do not replace it with any other lateral raise variation
+- Do NOT include cable lateral raise or machine lateral raise — Dumbbell Lateral Raise covers side delts for this session
+- OHP goes at position 2 only, 3 sets, lighter weight than compound days
+- Wrist Curls are FIXED at position 6 — always include them"""
+
+    else:
+        split_structure = f"{split.upper()} DAY — Follow compound before isolation ordering."
+
     prompt = f"""You are an expert personal trainer for an ADVANCED gym-goer (3+ years, machines + free weights).
 
-TODAY'S SPLIT: {split}
+TODAY'S SPLIT: {split}{'  [FRIDAY PULL — NO DEADLIFT]' if is_friday_pull else ''}
 
 WORKING WEIGHTS (use these exactly, do not change):
 {json.dumps(working_weights, indent=2)}
 
-RECENT HISTORY FOR THIS SPLIT (vary exercises and muscle zones from these):
+RECENT HISTORY FOR THIS SPLIT (vary exercises from these, do not repeat same session):
 {history_summary}
 
-MUSCLE TARGETING GUIDE:
-PUSH (CHEST + TRICEPS ONLY — NO shoulder exercises):
-  Chest zones: Upper=Incline Press/Fly, Middle=Flat Bench/Pec Dec, Lower=Decline/High-to-Low Cable Fly.
-  Triceps heads: Long Head=Overhead Extension/Skull Crushers (arm overhead), Lateral=Bar Pushdown/Close Grip Bench, Medial=Reverse Grip Pushdown.
-  ⚠️ STRICT RULE: For PUSH sessions, use ONLY chest and tricep exercises. Do NOT include any shoulder, lateral raise, rear delt, or overhead press exercises. Shoulders have their own dedicated day.
-  Vary chest zone emphasis and tricep head focus between Push Day 1 and Push Day 2.
+{split_structure}
 
-PULL (BACK + BICEPS ONLY — NO shoulder exercises):
-  Back: Width=Lat Pulldown/Pullup, Thickness=Barbell Row/Cable Row, Rear Delt=Face Pulls/Reverse Pec Dec.
-  Biceps: Long Head (peak)=Incline Curl/Hammer Curl, Short Head (width)=Preacher/Concentration Curl.
-  Alternate width vs thickness focus across Pull Day 1 and Pull Day 2.
-
-LEGS (LOWER BODY ONLY):
-  Quads=Squat/Leg Press, Hamstrings=RDL/Leg Curl, Glutes=Hip Thrust/Bulgarian Split Squat, Calves=Standing/Seated Calf Raise.
-  Hit all four muscle groups every leg session.
-
-SHOULDERS (DEDICATED DAY — deltoids and traps only):
-  Side Delts (priority)=Lateral Raises/Cable Lateral, Rear Delts (priority)=Reverse Pec Dec/Face Pulls/Bent Over Lateral, Front Delts (minimal — already trained on Push)=Light OHP, Traps=Shrugs/Upright Row.
-
-RULES:
-1. Exactly 7 exercises.
-2. Use working_kg values exactly as provided.
-3. Vary exercises from history — different angles, different exercises.
-4. Exactly 1-2 supersets and 1 dropset per session.
-5. Rep ranges: compounds 4-8 reps, isolations 10-15 reps.
-6. Compound barbell lifts (Bench Press, Deadlift, Squat, OHP, Barbell Row): alternative must be null.
-7. Machine/isolation exercises: provide 1 alternative targeting same muscle head.
-8. Cardio finisher: LISS 15-20 min. Leg day only: 10 min.
+UNIVERSAL RULES (apply to ALL splits):
+1. Exactly 7 exercises — no more, no less.
+2. Use working_kg values EXACTLY as provided — do not change any weight.
+3. STRICT ORDER: Compounds always before isolations. Never place an isolation exercise before all compounds are done.
+4. NO DUPLICATES: Do not include two exercises that target the same muscle head with the same movement pattern in one session. e.g. Do not include both Dumbbell Lateral Raise AND Cable Lateral Raise in the same workout.
+5. Supersets and dropsets on isolation exercises only — never on position 1 compound.
+6. Exactly 1-2 supersets and 1 dropset per session total.
+7. Rep ranges: heavy compounds (position 1-2) = 4-6 reps, secondary compounds = 6-8 reps, isolations = 10-15 reps.
+8. Compound barbell lifts (Bench Press, Deadlift, Squat, OHP, Barbell Row): alternative = null.
+9. Machine/isolation exercises: provide 1 alternative targeting same muscle head.
+10. Cardio finisher: LISS 15-20 min after session. Leg day only: 10 min (legs are taxing enough).
 
 Wrap your entire response inside <json> and </json> tags. Output valid JSON only inside those tags.
 
