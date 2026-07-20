@@ -92,8 +92,8 @@ def determine_split(history, today):
         1: "Pull",       # Tuesday
         2: "Shoulders",  # Wednesday
         3: "Push",       # Thursday
-        4: "Legs",       # Friday  ← was Pull
-        5: "Pull",       # Saturday ← was Legs
+        4: "Pull",       # Friday
+        5: "Legs",       # Saturday
         6: "Rest",       # Sunday
     }
     split = DAY_SPLIT[today.weekday()]
