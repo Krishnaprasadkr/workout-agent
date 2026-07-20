@@ -143,12 +143,12 @@ def generate_workout(split, working_weights, history, today=None):
 
     history_summary = _summarise_history(history, split)
 
-    # Determine if today is Saturday Pull (day index 5 = Saturday in Mon=0 system)
-    # Saturday Pull comes right after Friday Legs — Deadlift banned to protect recovery
-    is_saturday_pull = False
+    # Determine if today is Friday Pull (day index 4 = Friday in Mon=0 system)
+    # Friday Pull comes right before Saturday Legs — Deadlift banned to protect recovery
+    is_friday_pull = False
     if today is not None and split == "Pull":
-        day_idx = today.weekday()  # Mon=0, Sat=5
-        is_saturday_pull = (day_idx == 5)
+        day_idx = today.weekday()  # Mon=0, Fri=4
+        is_friday_pull = (day_idx == 4)
 
     # Build split-specific structure instructions
     if split == "Push":
@@ -168,10 +168,10 @@ TRICEP HEADS: Long Head=overhead movements, Lateral=pushdowns, Medial=reverse gr
 Vary chest zone emphasis between Push Day 1 and Push Day 2."""
 
     elif split == "Pull":
-        if is_saturday_pull:
-            split_structure = """PULL DAY (SATURDAY) — BACK + BICEPS ONLY. No shoulder exercises.
+        if is_friday_pull:
+            split_structure = """PULL DAY (FRIDAY) — BACK + BICEPS ONLY. No shoulder exercises.
 
-⚠️ SATURDAY RULE: Deadlift is BANNED today. Friday was Legs — Romanian Deadlift already hit hamstrings and lower back hard. Deadlift today would destroy recovery.
+⚠️ FRIDAY RULE: Deadlift is BANNED today. Saturday is Legs — Deadlift would destroy recovery.
 
 MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
   Position 1: Heavy back compound ROW (choose ONE from: Barbell Bent Over Row, Chest-Supported DB Row, Meadows Row, Pendlay Row, T-Bar Row) — NO DEADLIFT
@@ -188,7 +188,7 @@ BICEP HEADS: Long Head (peak)=Incline/Hammer Curl, Short Head (width)=Preacher/C
             split_structure = """PULL DAY (TUESDAY) — BACK + BICEPS ONLY. No shoulder exercises.
 
 MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
-  Position 1: Deadlift — COMPULSORY, always position 1 on Tuesday Pull (only Pull day where Deadlift is allowed)
+  Position 1: Deadlift — COMPULSORY, always position 1 on Tuesday Pull (heaviest compound, done first)
   Position 2: Back width compound — Lat Pulldown or Wide Grip Pullup
   Position 3: Back thickness compound — Seated Cable Row or Barbell Row
   Position 4: Back isolation — Straight Arm Pulldown or Cable Pullover
@@ -236,7 +236,7 @@ MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
 
     prompt = f"""You are an expert personal trainer for an ADVANCED gym-goer (3+ years, machines + free weights).
 
-TODAY'S SPLIT: {split}{'  [SATURDAY PULL — NO DEADLIFT]' if is_saturday_pull else ''}
+TODAY'S SPLIT: {split}{'  [FRIDAY PULL — NO DEADLIFT]' if is_friday_pull else ''}
 
 WORKING WEIGHTS (use these exactly, do not change):
 {json.dumps(working_weights, indent=2)}
