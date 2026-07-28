@@ -7,12 +7,10 @@ import requests
 GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
 
 # Model fallback chain — updated July 2026
-# gemini-2.0-flash and gemini-1.5-flash shut down June 1, 2026
-# Current free tier models: gemini-3.1-flash-lite, gemini-2.5-flash-lite, gemini-3-flash-preview
 MODELS = [
-    "gemini-3.1-flash-lite",      # Free, fast, high quality — primary
-    "gemini-2.5-flash-lite",      # Free, reliable fallback
-    "gemini-3-flash-preview",     # Free preview, secondary fallback
+    "gemini-3.1-flash-lite",
+    "gemini-2.5-flash-lite",
+    "gemini-3-flash-preview",
 ]
 
 BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
@@ -22,21 +20,15 @@ INITIAL_WAIT = 20
 
 
 def _call_gemini(body: dict) -> str:
-    """
-    Try each model in the fallback chain.
-    Within each model, retry up to MAX_RETRIES times on 429 with backoff.
-    """
+    """Try each model in fallback chain with exponential backoff on 429."""
     last_error = None
-
     for model in MODELS:
         url = BASE_URL.format(model=model, key=GEMINI_API_KEY)
         print(f"[Gemini] Trying model: {model}")
         wait = INITIAL_WAIT
-
         for attempt in range(1, MAX_RETRIES + 1):
             try:
                 resp = requests.post(url, json=body, timeout=60)
-
                 if resp.status_code == 429:
                     retry_after = int(resp.headers.get("Retry-After", wait))
                     actual_wait = max(retry_after, wait)
@@ -44,54 +36,34 @@ def _call_gemini(body: dict) -> str:
                     time.sleep(actual_wait)
                     wait *= 2
                     continue
-
                 if resp.status_code == 404:
-                    print(f"[Gemini] 404 — model {model} not found. Trying next model.")
-                    break  # skip to next model immediately
-
+                    print(f"[Gemini] 404 — model {model} not found. Trying next.")
+                    break
                 resp.raise_for_status()
                 raw = resp.json()["candidates"][0]["content"]["parts"][0]["text"]
                 print(f"[Gemini] Success with model: {model}")
                 print(f"[Gemini] Raw response (first 200 chars): {raw[:200]}")
                 return raw
-
             except requests.exceptions.RequestException as e:
                 print(f"[Gemini] Request error on {model}: {e}")
                 last_error = e
-                break  # try next model
-
+                break
         else:
-            # All retries exhausted for this model
-            print(f"[Gemini] All retries exhausted for {model}. Trying next model...")
-            last_error = RuntimeError(f"429 persisted on {model} after {MAX_RETRIES} retries")
+            print(f"[Gemini] All retries exhausted for {model}. Trying next...")
+            last_error = RuntimeError(f"429 persisted on {model}")
 
-    raise RuntimeError(
-        f"All models failed. Last error: {last_error}\n"
-        "Quota may be exhausted for today. The agent will work normally tomorrow."
-    )
+    raise RuntimeError(f"All models failed. Last error: {last_error}")
 
 
 def _extract_json(raw: str) -> dict:
-    """
-    Extract JSON from Gemini response.
-    Handles <json> tags, *** replacing braces/brackets, and markdown fences.
-    """
-    # Step 1: grab content inside <json>...</json> tags if present
+    """Extract JSON from Gemini response — handles tags, *** replacing braces, markdown."""
     tag_match = re.search(r'<json>(.*?)</json>', raw, re.DOTALL)
     content = tag_match.group(1).strip() if tag_match else raw
-
-    # Step 2: strip markdown fences
     for ch in ["```json", "```"]:
         content = content.replace(ch, "")
     content = content.strip()
-
-    # Step 3: if *** is being used instead of { } — fix it
-    # Gemini sometimes replaces { and } (and even [ ]) with ***
-    # We detect this when *** is present but { is absent
     if "***" in content and "{" not in content:
         content = _rebuild_from_stars(content)
-
-    # Step 4: find outermost { } block and parse
     brace_match = re.search(r'\{.*\}', content, re.DOTALL)
     if brace_match:
         candidate = brace_match.group(0)
@@ -100,19 +72,12 @@ def _extract_json(raw: str) -> dict:
         except json.JSONDecodeError as e:
             print(f"[Gemini] JSON parse failed: {e}")
             print(f"[Gemini] Attempted:\n{candidate[:400]}")
-
     print(f"[Gemini] FULL raw response:\n{raw}")
     raise ValueError(f"Could not extract JSON. First 300 chars: {raw[:300]}")
 
 
 def _rebuild_from_stars(content: str) -> str:
-    """
-    Reconstruct valid JSON braces when Gemini uses *** instead of { and }.
-    Strategy: walk line by line, replace *** with { or } based on what follows.
-    - *** followed by a "key": line → opening {
-    - *** followed by a closing ] or another *** or end → closing }
-    - lone [ and ] are usually intact; only {} get replaced with ***
-    """
+    """Reconstruct JSON braces when Gemini uses *** instead of { }."""
     lines = content.split("\n")
     out = []
     i = 0
@@ -120,15 +85,13 @@ def _rebuild_from_stars(content: str) -> str:
         line = lines[i]
         stripped = line.strip()
         if stripped == "***":
-            # Peek ahead to decide open vs close
             next_content = ""
             for j in range(i + 1, min(i + 4, len(lines))):
                 ns = lines[j].strip()
                 if ns:
                     next_content = ns
                     break
-            # Opening brace if next meaningful line has a JSON key pattern
-            if re.match(r'^"[^"]+"\s*:', next_content) or next_content.startswith('"exercises"') or next_content.startswith('"cardio"'):
+            if re.match(r'^"[^"]+"\s*:', next_content):
                 out.append(line.replace("***", "{"))
             else:
                 out.append(line.replace("***", "}"))
@@ -138,125 +101,218 @@ def _rebuild_from_stars(content: str) -> str:
     return "\n".join(out)
 
 
+def _get_last_exercise(history, split, position):
+    """
+    Read session history to find what exercise was used at a given position
+    in the most recent session of this split.
+    Returns the exercise name at that position, or None.
+    """
+    same_split = [h for h in history if h.get("split") == split]
+    if not same_split:
+        return None
+    last = same_split[-1]
+    try:
+        plan = last.get("full_plan_json")
+        if isinstance(plan, str):
+            plan = json.loads(plan)
+        exercises = plan.get("exercises", [])
+        if position <= len(exercises):
+            return exercises[position - 1].get("name")
+    except Exception:
+        pass
+    return None
+
+
+def _count_split_sessions(history, split):
+    """Count how many sessions of this split exist in history."""
+    return sum(1 for h in history if h.get("split") == split)
+
+
 def generate_workout(split, working_weights, history, today=None):
-    """Ask Gemini to generate a structured workout plan for today."""
+    """Generate a structured workout plan for today."""
 
     history_summary = _summarise_history(history, split)
+    split_count = _count_split_sessions(history, split)
 
-    # Determine if today is Friday Pull (day index 4 = Friday in Mon=0 system)
-    # Friday Pull comes right before Saturday Legs — Deadlift banned to protect recovery
+    # ── Determine which alternating exercises to use ──────────────────────────
+    # For OR pairs: even session count = option A, odd = option B
+    # This creates automatic weekly alternation
+
+    def alternate(option_a, option_b, count=split_count):
+        return option_a if count % 2 == 0 else option_b
+
+    def cycle3(option_a, option_b, option_c, count=split_count):
+        idx = count % 3
+        return [option_a, option_b, option_c][idx]
+
+    # ── Friday Pull detection (day before Legs — no Deadlift) ─────────────────
     is_friday_pull = False
     if today is not None and split == "Pull":
-        day_idx = today.weekday()  # Mon=0, Fri=4
-        is_friday_pull = (day_idx == 4)
+        is_friday_pull = (today.weekday() == 4)  # Friday = 4
 
-    # Build split-specific structure instructions
-    if split == "Push":
-        split_structure = """PUSH DAY — CHEST + TRICEPS ONLY. No shoulder, lateral raise, rear delt, or OHP.
+    # ── Build split-specific prompt ───────────────────────────────────────────
 
-MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
-  Position 1: Heavy chest compound — Flat Barbell Bench Press (ALWAYS first, ALWAYS)
-  Position 2: Secondary chest compound — Incline DB Press or Incline Barbell Press
-  Position 3: Chest isolation — Pec Dec / Cable Fly / High-to-Low Cable Fly
-  Position 4: Tricep compound — Close Grip Bench or Weighted Dips
-  Position 5: Tricep long head isolation — Overhead Tricep Extension or Skull Crushers (arm must go overhead)
-  Position 6: Tricep lateral head isolation — Straight Bar Pushdown or Rope Pushdown
-  Position 7: Second chest or tricep isolation (vary from history)
+    if split == "Push" and today is not None and today.weekday() == 0:
+        # MONDAY PUSH — Upper + Inner Chest Focus
+        ex3 = alternate("Hex Press", "Neutral Grip DB Press")
+        ex4 = alternate("Skull Crushers", "Overhead Tricep Extension")
+        ex5 = alternate("Reverse Grip Tricep Pushdown", "V-Bar Tricep Pushdown")
 
-CHEST ZONES: Upper=Incline movements, Middle=Flat/Pec Dec, Lower=Decline/High-to-Low Cable
-TRICEP HEADS: Long Head=overhead movements, Lateral=pushdowns, Medial=reverse grip pushdown
-Vary chest zone emphasis between Push Day 1 and Push Day 2."""
+        split_structure = f"""MONDAY PUSH — UPPER CHEST + INNER CHEST FOCUS. Chest, Triceps, Abs only.
 
-    elif split == "Pull":
-        if is_friday_pull:
-            split_structure = """PULL DAY (FRIDAY) — BACK + BICEPS ONLY. No shoulder exercises.
+MANDATORY EXERCISE ORDER (fixed positions — do not change):
+  Position 1: Flat Barbell Bench Press — sets:4, reps:4-6, weight from working_weights
+  Position 2: Incline Barbell Press — sets:4, reps:6-8, weight from working_weights
+  Position 3: {ex3} — sets:3, reps:10-12, weight from working_weights (inner chest / neutral grip peak contraction)
+  Position 4: {ex4} — sets:3, reps:8-12, weight from working_weights (tricep long head — arm must go overhead)
+  Position 5: {ex5} — sets:3, reps:12-15, weight from working_weights (tricep medial/lateral head)
+  Position 6: Hanging Leg Raise — sets:3, reps:12-15, bodyweight (lower abs)
+  Position 7: Reverse Crunches — sets:3, reps:15-20, bodyweight (lower abs)
 
-⚠️ FRIDAY RULE: Deadlift is BANNED today. Saturday is Legs — Deadlift would destroy recovery.
+CARDIO: Fun LISS after session, 15-20 min, HR 125-135 BPM.
+NO shoulder exercises. NO lateral raises. NO rear delt work."""
 
-MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
-  Position 1: Heavy back compound ROW (choose ONE from: Barbell Bent Over Row, Chest-Supported DB Row, Meadows Row, Pendlay Row, T-Bar Row) — NO DEADLIFT
-  Position 2: Back width compound — Lat Pulldown or Wide Grip Pullup
-  Position 3: Secondary back row — Seated Cable Row or Single Arm DB Row
-  Position 4: Back isolation — Straight Arm Pulldown or Cable Pullover
-  Position 5: Rear delt — Face Pulls or Reverse Pec Dec
-  Position 6: Bicep compound — Barbell Curl or Incline DB Curl
-  Position 7: Bicep isolation — Hammer Curl or Concentration Curl or Preacher Curl
+    elif split == "Push" and today is not None and today.weekday() == 3:
+        # THURSDAY PUSH — Overall Chest Focus
+        ex3 = cycle3("High-to-Low Cable Fly", "Decline DB Press", "Decline Barbell Press")
+        ex4 = alternate("Close Grip Barbell Press", "Tricep Dips")
+        ex5 = alternate("Straight Bar Tricep Pushdown", "Rope Tricep Pushdown")
 
-BACK FOCUS: Width=Lat Pulldown/Pullup, Thickness=Row movements
-BICEP HEADS: Long Head (peak)=Incline/Hammer Curl, Short Head (width)=Preacher/Concentration Curl"""
-        else:
-            split_structure = """PULL DAY (TUESDAY) — BACK + BICEPS ONLY. No shoulder exercises.
+        split_structure = f"""THURSDAY PUSH — OVERALL CHEST FOCUS (Upper + Middle + Lower). Chest, Triceps, Abs only.
 
-MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
-  Position 1: Deadlift — COMPULSORY, always position 1 on Tuesday Pull (heaviest compound, done first)
-  Position 2: Back width compound — Lat Pulldown or Wide Grip Pullup
-  Position 3: Back thickness compound — Seated Cable Row or Barbell Row
-  Position 4: Back isolation — Straight Arm Pulldown or Cable Pullover
-  Position 5: Rear delt — Face Pulls or Reverse Pec Dec
-  Position 6: Bicep compound — Barbell Curl or Incline DB Curl
-  Position 7: Bicep isolation — Hammer Curl or Concentration Curl or Preacher Curl
+MANDATORY EXERCISE ORDER (fixed positions — do not change):
+  Position 1: Flat Barbell Bench Press — sets:4, reps:4-6, weight from working_weights (middle chest anchor)
+  Position 2: Incline DB Press — sets:4, reps:8-10, weight from working_weights (upper chest)
+  Position 3: {ex3} — sets:3, reps:10-15, weight from working_weights (lower chest — this week's rotation)
+  Position 4: {ex4} — sets:3, reps:8-12, weight from working_weights (tricep compound — upright torso if dips)
+  Position 5: {ex5} — sets:3, reps:12-15, weight from working_weights (tricep lateral head finisher)
+  Position 6: Cable Crunch — sets:3, reps:15-20 (upper abs)
+  Position 7: Oblique Cable Crunch or Russian Twist — sets:3, reps:15 each side (obliques)
 
-BACK FOCUS: Width=Lat Pulldown/Pullup, Thickness=Seated Row/Barbell Row
-BICEP HEADS: Long Head (peak)=Incline/Hammer Curl, Short Head (width)=Preacher/Concentration Curl"""
+CARDIO: LISS after session, 15-20 min, HR 125-135 BPM.
+NO shoulder exercises. NO lateral raises. NO rear delt work."""
 
-    elif split == "Legs":
-        split_structure = """LEGS DAY — LOWER BODY ONLY. No upper body exercises.
+    elif split == "Push":
+        # Generic Push (fallback if day unknown)
+        ex3 = alternate("Hex Press", "Neutral Grip DB Press")
+        ex4 = alternate("Skull Crushers", "Overhead Tricep Extension")
+        ex5 = alternate("Reverse Grip Tricep Pushdown", "V-Bar Tricep Pushdown")
 
-MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
-  Position 1: Heavy quad compound — Barbell Squat (ALWAYS first)
-  Position 2: Secondary quad compound — Leg Press or Hack Squat
-  Position 3: Hamstring compound — Romanian Deadlift (DB or Barbell)
-  Position 4: Hamstring isolation — Leg Curl (machine)
-  Position 5: Glute isolation — Hip Thrust or Bulgarian Split Squat
-  Position 6: Quad isolation — Leg Extension (machine)
-  Position 7: Calves — Standing Calf Raise or Seated Calf Raise
+        split_structure = f"""PUSH DAY — CHEST + TRICEPS + ABS ONLY.
 
-Hit all four muscle groups: Quads, Hamstrings, Glutes, Calves — every session."""
+MANDATORY EXERCISE ORDER:
+  Position 1: Flat Barbell Bench Press — sets:4, reps:4-6
+  Position 2: Incline Barbell Press or Incline DB Press — sets:4, reps:6-8
+  Position 3: {ex3} — sets:3, reps:10-12
+  Position 4: {ex4} — sets:3, reps:8-12
+  Position 5: {ex5} — sets:3, reps:12-15
+  Position 6: Hanging Leg Raise — sets:3, reps:12-15 (lower abs)
+  Position 7: Reverse Crunches — sets:3, reps:15-20 (lower abs)
+
+CARDIO: LISS 15-20 min, HR 125-135 BPM."""
+
+    elif split == "Pull" and not is_friday_pull:
+        # TUESDAY PULL — Lower Back + Mid Back Focus
+        ex2 = alternate("Seated Cable Row", "Single Hand Cable Row")
+        ex3 = alternate("Straight Arm Pulldown", "Reverse Grip Lat Pulldown")
+
+        split_structure = f"""TUESDAY PULL — LOWER BACK + MID BACK FOCUS. Back, Rear Delt, Biceps, Forearms only.
+
+MANDATORY EXERCISE ORDER (fixed positions — do not change):
+  Position 1: Deadlift — sets:4, reps:4-6, weight from working_weights (COMPULSORY — lower back anchor)
+  Position 2: {ex2} — sets:4, reps:8-12, weight from working_weights (mid back thickness)
+  Position 3: {ex3} — sets:3, reps:12-15, weight from working_weights (lat isolation — cable, no lower back load)
+  Position 4: Face Pull — sets:3, reps:15-20, weight from working_weights (rear delt + rotator cuff)
+  Position 5: Barbell Curl — sets:3, reps:8-10, weight from working_weights (bicep overall mass — FIXED Tuesday)
+  Position 6: Hammer Curl — sets:3, reps:12-15, weight from working_weights (bicep long head + brachialis — FIXED Tuesday)
+  Position 7: Barbell Wrist Curl SUPERSET WITH Reverse Wrist Curl — sets:3, reps:15-20 each (forearms — flexors + extensors)
+
+CARDIO: LISS after session, 15-20 min, HR 125-135 BPM.
+NO Deadlift alternatives. NO lat pulldown. NO incline curls or preacher curls on Tuesday."""
+
+    elif split == "Pull" and is_friday_pull:
+        # FRIDAY PULL — Upper Back + Width Focus (NO DEADLIFT)
+        ex2 = alternate("Chest-Supported T-Bar Row", "Neutral Grip Lat Pulldown")
+        ex3 = alternate("Barbell Row", "Single Hand DB Row")
+
+        split_structure = f"""FRIDAY PULL — UPPER BACK + WIDTH FOCUS. Back, Rear Delt, Biceps, Forearms only.
+
+⚠️ DEADLIFT BANNED TODAY — Saturday is Legs. Romanian Deadlift already hits hamstrings/lower back on Leg day.
+
+MANDATORY EXERCISE ORDER (fixed positions — do not change):
+  Position 1: Lat Pulldown — sets:4, reps:8-12, weight from working_weights (upper back WIDTH anchor — NO DEADLIFT)
+  Position 2: {ex2} — sets:4, reps:8-12, weight from working_weights (upper back thickness)
+  Position 3: {ex3} — sets:3, reps:8-12, weight from working_weights (back thickness variation)
+  Position 4: Reverse Pec Dec — sets:3, reps:15-20, weight from working_weights (rear delt — different from Tuesday)
+  Position 5: Incline DB Curl — sets:3, reps:10-12, weight from working_weights (bicep long head peak — FIXED Friday)
+  Position 6: Preacher Curl — sets:3, reps:10-12, weight from working_weights (bicep short head width — FIXED Friday)
+  Position 7: Reverse Barbell Curl SUPERSET WITH Behind-the-back Wrist Curl — sets:3, reps:12-15 each (forearms — brachioradialis + flexors)
+
+CARDIO: LISS after session, 15-20 min, HR 125-135 BPM.
+NO Deadlift. NO Face Pull (used Tuesday — use Reverse Pec Dec instead). NO Barbell Curl or Hammer Curl (Tuesday exercises)."""
 
     elif split == "Shoulders":
-        split_structure = """SHOULDERS DAY — SIDE DELTS ARE THE PRIORITY. Front delts already trained heavily on both Push days.
+        ex4 = alternate("Face Pull", "Reverse Pec Dec")
 
-MANDATORY EXERCISE ORDER (strictly follow positions 1-7):
-  Position 1: Dumbbell Lateral Raise — ALWAYS this exact exercise, ALWAYS first. 4 sets. Side delts are the priority.
-  Position 2: Overhead Press (DB or Barbell) — 3 sets only, MODERATE weight. Front delt maintenance, NOT the focus.
-  Position 3: Rear delt compound — Face Pulls or Bent Over Lateral Raise
-  Position 4: Rear delt isolation — Reverse Pec Dec
-  Position 5: Trap compound — Smith Machine Shrugs or Barbell Shrugs
-  Position 6: Wrist Curls (barbell or dumbbell) — Forearms — Flexor Carpi Radialis. ALWAYS position 6.
-  Position 7: Second rear delt or trap variation (e.g. Upright Row, Cable Rear Delt Fly, or Face Pull variant)
+        split_structure = f"""WEDNESDAY SHOULDERS — SIDE DELTS + REAR DELTS PRIORITY. Deltoids, Traps only.
 
-⚠️ STRICT SHOULDER RULES:
-- Dumbbell Lateral Raise is FIXED at position 1 — do not replace it with any other lateral raise variation
-- Do NOT include cable lateral raise or machine lateral raise — Dumbbell Lateral Raise covers side delts for this session
-- OHP goes at position 2 only, 3 sets, lighter weight than compound days
-- Wrist Curls are FIXED at position 6 — always include them"""
+MANDATORY EXERCISE ORDER (fixed positions — do not change):
+  Position 1: Overhead DB Press — sets:3, reps:10-12, weight from working_weights (overall delt — moderate weight, NOT the priority)
+  Position 2: Dumbbell Lateral Raise — sets:4, reps:12-15, weight from working_weights (side delt — PRIORITY, heavier sets)
+  Position 3: Leaning Dumbbell Lateral Raise — sets:3, reps:12-15, weight from working_weights (side delt — better angle than standing)
+  Position 4: {ex4} — sets:3, reps:15-20, weight from working_weights (rear delt — alternates weekly)
+  Position 5: Smith Machine Shrugs — sets:4, reps:10-12, weight from working_weights (traps)
+  Position 6: Bent Over Lateral Raise — sets:3, reps:15-20, weight from working_weights (rear delt from different angle)
+  Position 7: Cable Rear Delt Fly or Upright Row (wide grip only, pull to nipple height — NOT chin) — sets:3, reps:12-15
+
+CARDIO: 15 min FUN cardio — jumping jacks, cone sprints, skipping, Zumba, or any enjoyable activity. Keep it light and fun.
+NO Upright Row with narrow grip (shoulder impingement risk). Side delts are the priority — not OHP."""
+
+    elif split == "Legs":
+        ex1 = alternate("Barbell Squat", "Smith Machine Squat")
+
+        split_structure = f"""SATURDAY LEGS — FULL LEG DEVELOPMENT. Quads, Hamstrings, Glutes, Calves only.
+
+MANDATORY EXERCISE ORDER (fixed positions — do not change):
+  Position 1: {ex1} — sets:4, reps:6-8, weight from working_weights (quad + glute anchor)
+  Position 2: Leg Press — sets:4, reps:8-12, weight from working_weights (quad + hamstring compound)
+  Position 3: Walking Lunges — sets:3, reps:12 each leg, weight from working_weights (quad + glute + balance)
+  Position 4: Leg Extension — sets:3, reps:12-15, weight from working_weights (quad isolation)
+  Position 5: Leg Curl — sets:3, reps:12-15, weight from working_weights (hamstring isolation)
+  Position 6: Sumo Squats — sets:3, reps:12-15, weight from working_weights (inner thigh + glutes)
+  Position 7: Calf Raises — sets:4, reps:15-20, weight from working_weights (calves — hold peak contraction 1 sec)
+
+CARDIO: LISS after session, 10 min only (legs are taxing enough), HR 120-130 BPM."""
 
     else:
         split_structure = f"{split.upper()} DAY — Follow compound before isolation ordering."
 
     prompt = f"""You are an expert personal trainer for an ADVANCED gym-goer (3+ years, machines + free weights).
 
-TODAY'S SPLIT: {split}{'  [FRIDAY PULL — NO DEADLIFT]' if is_friday_pull else ''}
+TODAY'S SPLIT: {split}{' [FRIDAY PULL — NO DEADLIFT]' if is_friday_pull else ''}
+SESSION NUMBER FOR THIS SPLIT: {split_count + 1}
 
-WORKING WEIGHTS (use these exactly, do not change):
+WORKING WEIGHTS (use these EXACTLY — do not change any weight value):
 {json.dumps(working_weights, indent=2)}
 
-RECENT HISTORY FOR THIS SPLIT (vary exercises from these, do not repeat same session):
+RECENT HISTORY FOR THIS SPLIT (for context and variation reference):
 {history_summary}
 
 {split_structure}
 
-UNIVERSAL RULES (apply to ALL splits):
-1. Exactly 7 exercises — no more, no less.
-2. Use working_kg values EXACTLY as provided — do not change any weight.
-3. STRICT ORDER: Compounds always before isolations. Never place an isolation exercise before all compounds are done.
-4. NO DUPLICATES: Do not include two exercises that target the same muscle head with the same movement pattern in one session. e.g. Do not include both Dumbbell Lateral Raise AND Cable Lateral Raise in the same workout.
-5. Supersets and dropsets on isolation exercises only — never on position 1 compound.
-6. Exactly 1-2 supersets and 1 dropset per session total.
-7. Rep ranges: heavy compounds (position 1-2) = 4-6 reps, secondary compounds = 6-8 reps, isolations = 10-15 reps.
-8. Compound barbell lifts (Bench Press, Deadlift, Squat, OHP, Barbell Row): alternative = null.
-9. Machine/isolation exercises: provide 1 alternative targeting same muscle head.
-10. Cardio finisher: LISS 15-20 min after session. Leg day only: 10 min (legs are taxing enough).
+UNIVERSAL RULES:
+1. Generate EXACTLY 7 exercises — positions 1-7 as defined above.
+2. Use working_kg values EXACTLY as provided. Do not modify any weight.
+3. Follow the exercise order STRICTLY — do not reorder positions.
+4. For fixed exercises (marked FIXED or COMPULSORY) — use that exact exercise, no substitutions.
+5. For positions showing a specific exercise already chosen above — use exactly that exercise.
+6. Supersets: forearm exercises at position 7 on Pull days are always supersets. Add 1 more superset on an isolation exercise (positions 4-6). Total supersets per session: 2.
+7. Dropset: add 1 dropset on one isolation exercise (positions 4-6). Never on position 1-2 compounds.
+8. Rep ranges: use the ranges specified per position above.
+9. Compound barbell lifts (Bench Press, Deadlift, Squat, OHP, Barbell Row): alternative = null.
+10. Machine/cable/isolation exercises: provide 1 alternative targeting same muscle.
+11. Add coaching note for technically demanding exercises.
+12. NO DUPLICATES — do not repeat the same movement pattern twice in one session.
 
 Wrap your entire response inside <json> and </json> tags. Output valid JSON only inside those tags.
 
@@ -286,14 +342,14 @@ Wrap your entire response inside <json> and </json> tags. Output valid JSON only
 
 type = normal | superset | dropset
 partner = superset partner exercise name, or null
-alternative = "Alt: Exercise Name (muscle head)" for machines/isolations, null for compound barbell lifts
+alternative = "Alt: Exercise Name (muscle)" for isolation/cable/machine, null for barbell compounds
 
 Generate the {split} workout now:"""
 
     body = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
-            "temperature": 0.7,
+            "temperature": 0.5,
             "maxOutputTokens": 8192,
         },
     }
@@ -304,7 +360,6 @@ Generate the {split} workout now:"""
 
 def generate_weekly_summary(history):
     """Ask Gemini to generate a Sunday weekly summary."""
-
     last_7 = history[-7:] if len(history) >= 7 else history
     slim = [
         {
@@ -339,7 +394,7 @@ Under 250 words. Use *bold* for headings. Plain text only."""
 
 
 def _summarise_history(history, split):
-    """Return last 2 sessions of the same split."""
+    """Return last 2 sessions of the same split with exercise names."""
     same = [h for h in history if h.get("split") == split][-2:]
     if not same:
         return "No previous sessions for this split yet."
