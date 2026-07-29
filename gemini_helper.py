@@ -243,7 +243,7 @@ MANDATORY EXERCISE ORDER (fixed positions — do not change):
   Position 1: Lat Pulldown — sets:4, reps:8-12, weight from working_weights (upper back WIDTH anchor — NO DEADLIFT)
   Position 2: {ex2} — sets:4, reps:8-12, weight from working_weights (upper back thickness)
   Position 3: {ex3} — sets:3, reps:8-12, weight from working_weights (back thickness variation)
-  Position 4: Reverse Pec Dec — sets:3, reps:15-20, weight from working_weights (rear delt — different from Tuesday)
+  Position 4: Face Pull — sets:3, reps:15-20, weight from working_weights (rear delt + rotator cuff)
   Position 5: Incline DB Curl — sets:3, reps:10-12, weight from working_weights (bicep long head peak — FIXED Friday)
   Position 6: Preacher Curl — sets:3, reps:10-12, weight from working_weights (bicep short head width — FIXED Friday)
   Position 7: Reverse Barbell Curl SUPERSET WITH Behind-the-back Wrist Curl — sets:3, reps:12-15 each (forearms — brachioradialis + flexors)
@@ -252,21 +252,21 @@ CARDIO: LISS after session, 15-20 min, HR 125-135 BPM.
 NO Deadlift. NO Face Pull (used Tuesday — use Reverse Pec Dec instead). NO Barbell Curl or Hammer Curl (Tuesday exercises)."""
 
     elif split == "Shoulders":
-        ex4 = alternate("Face Pull", "Reverse Pec Dec")
+        ex1 = alternate("Dumbbell Shoulder Press", "Barbell Shoulder Press")
+        ex3 = alternate("Arnold Press", "Leaning Dumbbell Lateral Raise")
 
-        split_structure = f"""WEDNESDAY SHOULDERS — SIDE DELTS + REAR DELTS PRIORITY. Deltoids, Traps only.
+        split_structure = f"""WEDNESDAY SHOULDERS — 5 EXERCISES ONLY. Deltoids and Traps only.
 
-MANDATORY EXERCISE ORDER (fixed positions — do not change):
-  Position 1: Overhead DB Press — sets:3, reps:10-12, weight from working_weights (overall delt — moderate weight, NOT the priority)
-  Position 2: Dumbbell Lateral Raise — sets:4, reps:12-15, weight from working_weights (side delt — PRIORITY, heavier sets)
-  Position 3: Leaning Dumbbell Lateral Raise — sets:3, reps:12-15, weight from working_weights (side delt — better angle than standing)
-  Position 4: {ex4} — sets:3, reps:15-20, weight from working_weights (rear delt — alternates weekly)
-  Position 5: Smith Machine Shrugs — sets:4, reps:10-12, weight from working_weights (traps)
-  Position 6: Bent Over Lateral Raise — sets:3, reps:15-20, weight from working_weights (rear delt from different angle)
-  Position 7: Cable Rear Delt Fly or Upright Row (wide grip only, pull to nipple height — NOT chin) — sets:3, reps:12-15
+MANDATORY EXERCISE ORDER (exactly 5 exercises — no more, no less):
+  Position 1: {ex1} — sets:4, reps:8-12, weight from working_weights (overall shoulder compound — alternates weekly)
+  Position 2: Dumbbell Lateral Raise — sets:4, reps:12-15, weight from working_weights (side delt PRIORITY — FIXED, always this exercise)
+  Position 3: {ex3} — sets:3, reps:10-15, weight from working_weights (Arnold=front+side+rear rotation / Leaning=better side delt stretch)
+  Position 4: Reverse Pec Dec Fly — sets:3, reps:15-20, weight from working_weights (rear delt isolation — FIXED)
+  Position 5: Smith Machine Shrugs — sets:4, reps:10-12, weight from working_weights (traps — FIXED)
 
-CARDIO: 15 min FUN cardio — jumping jacks, cone sprints, skipping, Zumba, or any enjoyable activity. Keep it light and fun.
-NO Upright Row with narrow grip (shoulder impingement risk). Side delts are the priority — not OHP."""
+CARDIO: 15 min FUN cardio after — jumping jacks, cone sprints, skipping rope, Zumba, or any enjoyable activity. Light and fun, not structured LISS.
+IMPORTANT: Generate ONLY 5 exercises for shoulders. Do NOT add a 6th or 7th exercise. The cardio is NOT an exercise slot.
+NO narrow grip Upright Row (shoulder impingement risk). NO Face Pulls today."""
 
     elif split == "Legs":
         ex1 = alternate("Barbell Squat", "Smith Machine Squat")
@@ -301,7 +301,7 @@ RECENT HISTORY FOR THIS SPLIT (for context and variation reference):
 {split_structure}
 
 UNIVERSAL RULES:
-1. Generate EXACTLY 7 exercises — positions 1-7 as defined above.
+1. Generate EXACTLY the number of exercises specified in the split structure above — 5 for Shoulders, 7 for all other splits. Do not add or remove exercises.
 2. Use working_kg values EXACTLY as provided. Do not modify any weight.
 3. Follow the exercise order STRICTLY — do not reorder positions.
 4. For fixed exercises (marked FIXED or COMPULSORY) — use that exact exercise, no substitutions.
