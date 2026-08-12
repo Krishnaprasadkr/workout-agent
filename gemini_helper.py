@@ -134,14 +134,24 @@ def generate_workout(split, working_weights, history, today=None):
     history_summary = _summarise_history(history, split)
     split_count = _count_split_sessions(history, split)
 
-    # ── Determine which alternating exercises to use ──────────────────────────
-    # For OR pairs: even session count = option A, odd = option B
-    # This creates automatic weekly alternation
+    # ── Day-specific session counting for correct alternation ─────────────────
+    # Monday and Thursday are both "Push" but need independent alternation
+    # Tuesday and Friday are both "Pull" but need independent alternation
+    # We count sessions that fell on the same weekday as today
+    day_specific_count = split_count  # fallback default
+    if today is not None:
+        today_weekday = today.weekday()
+        day_specific_count = sum(
+            1 for h in history
+            if h.get("split") == split
+            and _weekday_from_date(h.get("date")) == today_weekday
+        )
 
-    def alternate(option_a, option_b, count=split_count):
+    # ── Alternating function uses day-specific count ──────────────────────────
+    def alternate(option_a, option_b, count=day_specific_count):
         return option_a if count % 2 == 0 else option_b
 
-    def cycle3(option_a, option_b, option_c, count=split_count):
+    def cycle3(option_a, option_b, option_c, count=day_specific_count):
         idx = count % 3
         return [option_a, option_b, option_c][idx]
 
@@ -243,7 +253,7 @@ MANDATORY EXERCISE ORDER (fixed positions — do not change):
   Position 1: Lat Pulldown — sets:4, reps:8-12, weight from working_weights (upper back WIDTH anchor — NO DEADLIFT)
   Position 2: {ex2} — sets:4, reps:8-12, weight from working_weights (upper back thickness)
   Position 3: {ex3} — sets:3, reps:8-12, weight from working_weights (back thickness variation)
-  Position 4: Face Pull — sets:3, reps:15-20, weight from working_weights (rear delt + rotator cuff)
+  Position 4: Reverse Pec Dec — sets:3, reps:15-20, weight from working_weights (rear delt — different from Tuesday)
   Position 5: Incline DB Curl — sets:3, reps:10-12, weight from working_weights (bicep long head peak — FIXED Friday)
   Position 6: Preacher Curl — sets:3, reps:10-12, weight from working_weights (bicep short head width — FIXED Friday)
   Position 7: Reverse Barbell Curl SUPERSET WITH Behind-the-back Wrist Curl — sets:3, reps:12-15 each (forearms — brachioradialis + flexors)
@@ -290,7 +300,7 @@ CARDIO: LISS after session, 10 min only (legs are taxing enough), HR 120-130 BPM
     prompt = f"""You are an expert personal trainer for an ADVANCED gym-goer (3+ years, machines + free weights).
 
 TODAY'S SPLIT: {split}{' [FRIDAY PULL — NO DEADLIFT]' if is_friday_pull else ''}
-SESSION NUMBER FOR THIS SPLIT: {split_count + 1}
+SESSION NUMBER FOR THIS SPLIT (this weekday): {day_specific_count + 1} — used to determine which alternating exercise to use today
 
 WORKING WEIGHTS (use these EXACTLY — do not change any weight value):
 {json.dumps(working_weights, indent=2)}
@@ -402,3 +412,16 @@ def _summarise_history(history, split):
         f"Date: {s.get('date')} | Exercises: {s.get('exercise_names', 'N/A')}"
         for s in same
     )
+
+
+def _weekday_from_date(date_str):
+    """Return weekday index (Mon=0...Sun=6) from a date string like '2026-07-14'."""
+    if not date_str:
+        return -1
+    try:
+        from datetime import date as _date
+        parts = str(date_str).split("-")
+        d = _date(int(parts[0]), int(parts[1]), int(parts[2]))
+        return d.weekday()
+    except Exception:
+        return -1
