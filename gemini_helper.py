@@ -262,37 +262,46 @@ CARDIO: LISS after session, 15-20 min, HR 125-135 BPM.
 NO Deadlift. NO Face Pull (used Tuesday — use Reverse Pec Dec instead). NO Barbell Curl or Hammer Curl (Tuesday exercises)."""
 
     elif split == "Shoulders":
-        ex1 = alternate("Dumbbell Shoulder Press", "Barbell Shoulder Press")
-        ex3 = alternate("Arnold Press", "Leaning Dumbbell Lateral Raise")
+        # Wednesday = Shoulders (side/rear focus) + Posterior Chain legs
+        ex2 = alternate("Arnold Press", "Leaning Dumbbell Lateral Raise")
 
-        split_structure = f"""WEDNESDAY SHOULDERS — 5 EXERCISES ONLY. Deltoids and Traps only.
+        split_structure = f"""WEDNESDAY — SHOULDERS (SIDE DELT FOCUS) + POSTERIOR CHAIN LEGS. Exactly 6 exercises.
 
-MANDATORY EXERCISE ORDER (exactly 5 exercises — no more, no less):
-  Position 1: {ex1} — sets:4, reps:8-12, weight from working_weights (overall shoulder compound — alternates weekly)
-  Position 2: Dumbbell Lateral Raise — sets:4, reps:12-15, weight from working_weights (side delt PRIORITY — FIXED, always this exercise)
-  Position 3: {ex3} — sets:3, reps:10-15, weight from working_weights (Arnold=front+side+rear rotation / Leaning=better side delt stretch)
-  Position 4: Reverse Pec Dec Fly — sets:3, reps:15-20, weight from working_weights (rear delt isolation — FIXED)
-  Position 5: Smith Machine Shrugs — sets:4, reps:10-12, weight from working_weights (traps — FIXED)
+Shoulder exercises FIRST (positions 1-2), then legs (positions 3-6).
 
-CARDIO: 15 min FUN cardio after — jumping jacks, cone sprints, skipping rope, Zumba, or any enjoyable activity. Light and fun, not structured LISS.
-IMPORTANT: Generate ONLY 5 exercises for shoulders. Do NOT add a 6th or 7th exercise. The cardio is NOT an exercise slot.
-NO narrow grip Upright Row (shoulder impingement risk). NO Face Pulls today."""
+MANDATORY EXERCISE ORDER (exactly 6 exercises — no more, no less):
+  Position 1: Dumbbell Lateral Raise — sets:4, reps:12-15, weight from working_weights (Side Delt — Medial Deltoid — FIXED, always this exercise, PRIORITY)
+  Position 2: {ex2} — sets:3, reps:10-15, weight from working_weights (Arnold=front+side+rear rotation / Leaning=better side delt angle — alternates weekly)
+  Position 3: Romanian Deadlift — sets:4, reps:8-12, weight from working_weights (Hamstrings + Glutes — posterior chain compound anchor — FIXED)
+  Position 4: Lying Leg Curl — sets:3, reps:12-15, weight from working_weights (Hamstring isolation — FIXED)
+  Position 5: Sumo Squats — sets:3, reps:12-15, weight from working_weights (Inner Thigh + Glutes — FIXED)
+  Position 6: Calf Raises — sets:4, reps:15-20, weight from working_weights (Calves — hold peak contraction 1 sec — FIXED)
+
+CARDIO: 15 min FUN cardio after — jumping jacks, cone sprints, skipping rope, Zumba, or any enjoyable activity. Light and fun, NOT structured LISS.
+IMPORTANT: Generate EXACTLY 6 exercises. No 7th exercise. Cardio is NOT an exercise slot.
+NO Shrugs today. NO Reverse Pec Dec today. NO squats or leg press today — this is posterior chain focus only."""
 
     elif split == "Legs":
-        ex1 = alternate("Barbell Squat", "Smith Machine Squat")
+        # Saturday = Shoulders (compound/trap focus) + Quads dominant legs
+        ex1 = alternate("Dumbbell Shoulder Press", "Barbell Shoulder Press")
+        ex4 = alternate("Barbell Squat", "Smith Machine Squat")
 
-        split_structure = f"""SATURDAY LEGS — FULL LEG DEVELOPMENT. Quads, Hamstrings, Glutes, Calves only.
+        split_structure = f"""SATURDAY — SHOULDERS (COMPOUND + TRAP FOCUS) + QUAD DOMINANT LEGS. Exactly 7 exercises.
 
-MANDATORY EXERCISE ORDER (fixed positions — do not change):
-  Position 1: {ex1} — sets:4, reps:6-8, weight from working_weights (quad + glute anchor)
-  Position 2: Leg Press — sets:4, reps:8-12, weight from working_weights (quad + hamstring compound)
-  Position 3: Walking Lunges — sets:3, reps:12 each leg, weight from working_weights (quad + glute + balance)
-  Position 4: Leg Extension — sets:3, reps:12-15, weight from working_weights (quad isolation)
-  Position 5: Leg Curl — sets:3, reps:12-15, weight from working_weights (hamstring isolation)
-  Position 6: Sumo Squats — sets:3, reps:12-15, weight from working_weights (inner thigh + glutes)
-  Position 7: Calf Raises — sets:4, reps:15-20, weight from working_weights (calves — hold peak contraction 1 sec)
+Shoulder exercises FIRST (positions 1-2), then legs (positions 3-7).
 
-CARDIO: LISS after session, 10 min only (legs are taxing enough), HR 120-130 BPM."""
+MANDATORY EXERCISE ORDER (exactly 7 exercises — no more, no less):
+  Position 1: {ex1} — sets:4, reps:8-12, weight from working_weights (Overall Shoulder — Anterior + Medial Deltoid compound — alternates weekly)
+  Position 2: Smith Machine Shrugs — sets:4, reps:10-12, weight from working_weights (Traps — Trapezius — FIXED)
+  Position 3: {ex4} — sets:4, reps:6-8, weight from working_weights (Quads + Glutes — compound anchor — alternates weekly)
+  Position 4: Walking Lunges — sets:3, reps:12 each leg, weight from working_weights (Quads + Outer Quad + Glutes — FIXED)
+  Position 5: Leg Extension — sets:3, reps:12-15, weight from working_weights (Quad isolation — FIXED)
+  Position 6: Leg Curl — sets:3, reps:12-15, weight from working_weights (Hamstring isolation — FIXED, different stimulus from Wednesday RDL)
+  Position 7: Calf Raises — sets:4, reps:15-20, weight from working_weights (Calves — FIXED)
+
+CARDIO: LISS after session, 15-20 min, HR 125-135 BPM.
+IMPORTANT: Generate EXACTLY 7 exercises. No 8th exercise.
+NO Reverse Pec Dec today (covered on Friday Pull). NO Lateral Raise today (covered on Wednesday). NO Sumo Squats today — quad focus only."""
 
     else:
         split_structure = f"{split.upper()} DAY — Follow compound before isolation ordering."
@@ -311,7 +320,7 @@ RECENT HISTORY FOR THIS SPLIT (for context and variation reference):
 {split_structure}
 
 UNIVERSAL RULES:
-1. Generate EXACTLY the number of exercises specified in the split structure above — 5 for Shoulders, 7 for all other splits. Do not add or remove exercises.
+1. Generate EXACTLY the number of exercises specified in the split structure above — 6 for Wednesday (Shoulders), 7 for all other splits. Do not add or remove exercises.
 2. Use working_kg values EXACTLY as provided. Do not modify any weight.
 3. Follow the exercise order STRICTLY — do not reorder positions.
 4. For fixed exercises (marked FIXED or COMPULSORY) — use that exact exercise, no substitutions.
