@@ -262,46 +262,46 @@ CARDIO: LISS after session, 15-20 min, HR 125-135 BPM.
 NO Deadlift. NO Face Pull (used Tuesday — use Reverse Pec Dec instead). NO Barbell Curl or Hammer Curl (Tuesday exercises)."""
 
     elif split == "Shoulders":
-        # Wednesday = Shoulders (side/rear focus) + Posterior Chain legs
-        ex2 = alternate("Arnold Press", "Leaning Dumbbell Lateral Raise")
+        # Wednesday = Shoulders + Posterior Chain legs
+        ex6 = alternate("Dumbbell Shrugs", "Smith Machine Shrugs")
 
-        split_structure = f"""WEDNESDAY — SHOULDERS (SIDE DELT FOCUS) + POSTERIOR CHAIN LEGS. Exactly 6 exercises.
+        split_structure = f"""WEDNESDAY — SHOULDERS + POSTERIOR CHAIN LEGS. Exactly 6 exercises.
 
 Shoulder exercises FIRST (positions 1-2), then legs (positions 3-6).
 
 MANDATORY EXERCISE ORDER (exactly 6 exercises — no more, no less):
-  Position 1: Dumbbell Lateral Raise — sets:4, reps:12-15, weight from working_weights (Side Delt — Medial Deltoid — FIXED, always this exercise, PRIORITY)
-  Position 2: {ex2} — sets:3, reps:10-15, weight from working_weights (Arnold=front+side+rear rotation / Leaning=better side delt angle — alternates weekly)
-  Position 3: Romanian Deadlift — sets:4, reps:8-12, weight from working_weights (Hamstrings + Glutes — posterior chain compound anchor — FIXED)
+  Position 1: Dumbbell Lateral Raise — sets:4, reps:12-15, weight from working_weights (Side Delt — Medial Deltoid — FIXED always)
+  Position 2: Arnold Press — sets:3, reps:10-15, weight from working_weights (Overall Delt — front+side+rear rotation — FIXED always, do NOT replace with Leaning Lateral Raise)
+  Position 3: Romanian Deadlift — sets:4, reps:8-12, weight from working_weights (Hamstrings + Glutes — posterior chain compound — FIXED)
   Position 4: Lying Leg Curl — sets:3, reps:12-15, weight from working_weights (Hamstring isolation — FIXED)
   Position 5: Sumo Squats — sets:3, reps:12-15, weight from working_weights (Inner Thigh + Glutes — FIXED)
-  Position 6: Calf Raises — sets:4, reps:15-20, weight from working_weights (Calves — hold peak contraction 1 sec — FIXED)
+  Position 6: {ex6} — sets:4, reps:10-12, weight from working_weights (Traps — alternates weekly between DB Shrugs and Smith Machine Shrugs)
 
 CARDIO: 15 min FUN cardio after — jumping jacks, cone sprints, skipping rope, Zumba, or any enjoyable activity. Light and fun, NOT structured LISS.
-IMPORTANT: Generate EXACTLY 6 exercises. No 7th exercise. Cardio is NOT an exercise slot.
-NO Shrugs today. NO Reverse Pec Dec today. NO squats or leg press today — this is posterior chain focus only."""
+IMPORTANT: Generate EXACTLY 6 exercises. No 7th. Cardio is NOT an exercise slot.
+NO Calf Raises today. NO Leaning Lateral Raise today (Arnold Press is fixed at position 2)."""
 
     elif split == "Legs":
-        # Saturday = Shoulders (compound/trap focus) + Quads dominant legs
+        # Saturday = Shoulders (compound focus) + Quad dominant legs
         ex1 = alternate("Dumbbell Shoulder Press", "Barbell Shoulder Press")
-        ex4 = alternate("Barbell Squat", "Smith Machine Squat")
+        ex3 = alternate("Barbell Squat", "Smith Machine Squat")
 
-        split_structure = f"""SATURDAY — SHOULDERS (COMPOUND + TRAP FOCUS) + QUAD DOMINANT LEGS. Exactly 7 exercises.
+        split_structure = f"""SATURDAY — SHOULDERS + QUAD DOMINANT LEGS. Exactly 7 exercises.
 
 Shoulder exercises FIRST (positions 1-2), then legs (positions 3-7).
 
 MANDATORY EXERCISE ORDER (exactly 7 exercises — no more, no less):
-  Position 1: {ex1} — sets:4, reps:8-12, weight from working_weights (Overall Shoulder — Anterior + Medial Deltoid compound — alternates weekly)
-  Position 2: Smith Machine Shrugs — sets:4, reps:10-12, weight from working_weights (Traps — Trapezius — FIXED)
-  Position 3: {ex4} — sets:4, reps:6-8, weight from working_weights (Quads + Glutes — compound anchor — alternates weekly)
+  Position 1: {ex1} — sets:4, reps:8-12, weight from working_weights (Overall Shoulder compound — alternates weekly)
+  Position 2: Leaning Dumbbell Lateral Raise — sets:3, reps:12-15, weight from working_weights (Side Delt — better stretch angle — FIXED, no shrugs today)
+  Position 3: {ex3} — sets:4, reps:6-8, weight from working_weights (Quads + Glutes — compound anchor — alternates weekly)
   Position 4: Walking Lunges — sets:3, reps:12 each leg, weight from working_weights (Quads + Outer Quad + Glutes — FIXED)
   Position 5: Leg Extension — sets:3, reps:12-15, weight from working_weights (Quad isolation — FIXED)
-  Position 6: Leg Curl — sets:3, reps:12-15, weight from working_weights (Hamstring isolation — FIXED, different stimulus from Wednesday RDL)
-  Position 7: Calf Raises — sets:4, reps:15-20, weight from working_weights (Calves — FIXED)
+  Position 6: Hip Thrust — sets:4, reps:12-15, weight from working_weights (Glutes — Gluteus Maximus peak contraction — FIXED, replaces Leg Curl)
+  Position 7: Calf Raises — sets:4, reps:15-20, weight from working_weights (Calves — hold peak contraction 1 sec — FIXED)
 
 CARDIO: LISS after session, 15-20 min, HR 125-135 BPM.
-IMPORTANT: Generate EXACTLY 7 exercises. No 8th exercise.
-NO Reverse Pec Dec today (covered on Friday Pull). NO Lateral Raise today (covered on Wednesday). NO Sumo Squats today — quad focus only."""
+IMPORTANT: Generate EXACTLY 7 exercises. No 8th.
+NO Shrugs today (Wednesday has shrugs). NO Leg Curl today (replaced by Hip Thrust). NO Sumo Squats today — quad focus only."""
 
     else:
         split_structure = f"{split.upper()} DAY — Follow compound before isolation ordering."
