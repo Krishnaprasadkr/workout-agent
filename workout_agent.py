@@ -175,7 +175,7 @@ def build_workout_message(today, split, workout_plan, actuals_history=None):
             "\n━━━━━━━━━━━━━━━━━━━━━━",
             "🏃 *Cardio Finisher (Fat Loss)*",
             f"   {cardio.get('exercise', 'Treadmill Walk')}",
-            f"   ⏱ Duration: {cardio.get('duration', '20 min')}",
+            f"   ⏱ Duration: {cardio.get('duration', '25 min')}",
             f"   ❤️ HR Target: {cardio.get('hr_target', '125–135 BPM')}",
             f"   💡 {cardio.get('note', 'Keep it steady, breathe easy.')}",
         ]
